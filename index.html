@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Melcor Visualizer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Diagramas Melcor</h1>
+  <div class="top-bar">
+    <button id="newDiagramBtn">Nuevo Diagrama</button>
+    <button id="loadYamlBtn">Cargar YAML</button>
+    <input type="file" id="yamlFileInput" style="display: none;" accept=".yaml" />
+    <button id="downloadBtn">Descargar</button>
+    <button id="otrosDatosBtn">Otros Datos</button>
+  </div>
+
+  <div id="container">
+    <aside id="leftPanel">
+      <h3>Figuras Disponibles</h3>
+      <div class="figure-item" draggable="true" data-type="control-volume">
+        <div class="color-box" style="background-color: #ADD8E6; width: 30px; height: 30px; border: 1px solid black;"></div>
+        <span>Control Volume</span>
+      </div>
+      <div class="figure-item" draggable="true" data-type="flow-path">
+        <div class="color-box" style="width: 50px; height: 2px; background-color: #808080;"></div>
+        <span>Flow Path</span>
+      </div>
+      <div class="figure-item" draggable="true" data-type="control-function">
+        <div class="color-box" style="background-color: pink; width: 30px; height: 30px; border-radius: 50%;"></div>
+        <span>Control Function</span>
+      </div>
+    </aside>
+    <div id="network"></div>
+    <div id="rightPanel">
+      <div id="legend">
+        <h3>Legend</h3>
+        <h4>Gases:</h4>
+        <div class="legend-item">
+          <div class="color-box" style="background-color: #6495ED;"></div><span>N2 (ID 4)</span>
+        </div>
+        <div class="legend-item">
+          <div class="color-box" style="background-color: #FF6347;"></div><span>O2 (ID 5)</span>
+        </div>
+        <div class="legend-item">
+          <div class="color-box" style="background-color: #90EE90;"></div><span>H2 (ID 6)</span>
+        </div>
+        <div class="legend-item">
+          <div class="color-box" style="background-color: #FFD700;"></div><span>HE (ID 7)</span>
+        </div>
+        <div class="legend-item">
+          <div class="color-box" style="background-color: #8A2BE2;"></div><span>AR (ID 8)</span>
+        </div>
+
+        <h4>Volúmenes de Control:</h4>
+        <div class="legend-item">
+          <div class="color-box" style="background-color: #ADD8E6; width: 30px; height: 30px; border: 1px solid black;"></div>
+          <span>Control Volume (Rectángulo)</span>
+        </div>
+
+        <h4>Flujos (Flow Paths):</h4>
+        <div class="legend-item">
+          <div class="color-box" style="width: 50px; height: 2px; background-color: #808080;"></div>
+          <span>Flow Path (Línea)</span>
+        </div>
+
+        <h4>Funciones de Control:</h4>
+        <div class="legend-item">
+          <div class="color-box" style="background-color: pink; width: 30px; height: 30px; border-radius: 50%;"></div>
+          <span>Control Function (Círculo Rosa)</span>
+        </div>
+      </div>
+      <div id="nodeProperties" class="properties-panel">
+        <div id="propertiesHeader" class="panel-header">
+          <h3>Detalles</h3>
+        </div>
+        <div id="propertiesContent" class="panel-content">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 Desarrollado por Victor Garcia Nieto</p>
+  </footer>
+
+  <div id="otrosDatosModal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close-btn" id="closeModalBtn">&times;</span>
+      <h2>Editar Otros Datos</h2>
+      <p>Aquí podrás editar los campos NCG Input y External Data Files.</p>
+    </div>
+  </div>
+
+  <script src="prueba.js"></script>
+</body>
+</html>
+

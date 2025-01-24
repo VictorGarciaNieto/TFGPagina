@@ -1,0 +1,207 @@
+/* Estilo general */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    background-color: #f4faff; /* Fondo azul claro */
+    color: #333; /* Color de texto más oscuro para contraste */
+}
+
+/* Contenedor principal */
+#container {
+    display: flex;
+    flex: 1;
+    overflow: hidden; /* Evita que los elementos se expandan más allá del área visible */
+    background-color: #ffffff; /* Fondo blanco para claridad */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    margin: 10px;
+}
+
+/* Contenedor del diagrama */
+#network {
+    flex: 1;
+    height: 100%;
+    border: 1px solid #cbd5e1; /* Azul claro para bordes */
+    position: relative;
+    overflow: hidden; /* Previene que el contenido desborde */
+    background-color: #eef3f8; /* Fondo suave para el área del diagrama */
+    border-radius: 8px;
+}
+
+/* Panel derecho */
+#rightPanel {
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: auto;
+    background-color: #ffffff; /* Fondo blanco */
+    border-left: 1px solid #cbd5e1; /* Azul claro para bordes */
+    padding: 10px;
+}
+
+/* Leyenda */
+#legend {
+    flex: 1;
+    padding: 10px;
+    background-color: #eef3f8; /* Fondo azul claro */
+    border: 1px solid #cbd5e1;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    border-radius: 8px;
+}
+
+/* Elementos de la leyenda */
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.color-box {
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+}
+
+/* Panel de propiedades */
+#nodeProperties {
+    flex: 1.5;
+    padding: 16px;
+    background-color: #f4faff; /* Azul claro */
+    border-top: 1px solid #cbd5e1;
+    overflow-y: auto;
+    border-radius: 8px;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 2px;
+    background-color: #eef3f8; /* Azul claro */
+    border-top: 1px solid #cbd5e1;
+    font-size: 14px;
+    color: #333; /* Texto oscuro */
+}
+
+/* Barra superior */
+.top-bar {
+    display: flex;
+    gap: 8px; /* Espacio entre elementos reducido */
+    margin-bottom: 15px; /* Reducir margen inferior */
+    padding: 8px; /* Reducir padding general */
+    background-color: #eef3f8; /* Azul claro */
+    border-bottom: 1px solid #cbd5e1;
+    border-radius: 8px;
+}
+
+/* Botones principales */
+button, #yamlFile {
+    background-color: #1d4ed8; /* Azul intenso */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover, #yamlFile:hover {
+    background-color: #2563eb; /* Azul más brillante */
+}
+
+/* Modal */
+#otrosDatosModal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 900px;
+    max-height: 90%;
+    overflow-y: auto;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    z-index: 1000;
+    border: 1px solid #cbd5e1;
+}
+
+#otrosDatosModal h2, #otrosDatosModal h3 {
+    margin-bottom: 10px;
+    color: #1e3a8a; /* Azul más oscuro */
+}
+
+/* Botón de cierre del modal */
+#otrosDatosModal .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #555;
+}
+
+/* Estilos del formulario */
+input[type="text"], input[type="number"] {
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    margin-top: 5px;
+}
+
+#saveBtn, #downloadBtn {
+    background-color: #1d4ed8;
+    color: #ffffff;
+    border: none;
+    padding: 10px;
+    font-size: 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#saveBtn:hover, #downloadBtn:hover {
+    background-color: #2563eb;
+}
+
+/* Panel izquierdo */
+#leftPanel {
+    width: 200px; /* Reducir el ancho */
+    display: flex;
+    flex-direction: column;
+    padding: 8px; /* Reducir el padding */
+    background-color: #f4faff; /* Azul claro */
+    border-right: 1px solid #cbd5e1;
+    overflow-y: auto;
+}
+
+/* Elementos del panel izquierdo */
+.draggable-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    margin-bottom: 15px; /* Espaciado entre elementos */
+    background-color: #ffffff; /* Fondo blanco para contraste */
+    border: 1px solid #cbd5e1; /* Borde azul claro */
+    border-radius: 6px; /* Bordes redondeados */
+    cursor: grab;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.draggable-item:hover {
+    background-color: #eef3f8; /* Azul claro al pasar el ratón */
+    transform: translateY(-2px); /* Efecto de flotación */
+}
