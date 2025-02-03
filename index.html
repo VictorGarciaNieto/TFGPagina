@@ -19,21 +19,12 @@
   </div>
 
   <div id="container">
-    <aside id="leftPanel">
-      <h3>Figuras Disponibles</h3>
-      <div class="figure-item" draggable="true" data-type="control-volume">
-        <div class="color-box" style="background-color: #ADD8E6; width: 30px; height: 30px; border: 1px solid black;"></div>
-        <span>Control Volume</span>
+    <div id="leftPanel">
+      <h3>Panel de Control Volumes</h3>
+      <div class="draggable" id="controlVolume" draggable="true">
+        <div class="control-volume-box">Control Volume</div>
       </div>
-      <div class="figure-item" draggable="true" data-type="flow-path">
-        <div class="color-box" style="width: 50px; height: 2px; background-color: #808080;"></div>
-        <span>Flow Path</span>
-      </div>
-      <div class="figure-item" draggable="true" data-type="control-function">
-        <div class="color-box" style="background-color: pink; width: 30px; height: 30px; border-radius: 50%;"></div>
-        <span>Control Function</span>
-      </div>
-    </aside>
+    </div>
     <div id="network"></div>
     <div id="rightPanel">
       <div id="legend">
@@ -98,4 +89,3 @@
   <script src="prueba.js"></script>
 </body>
 </html>
-

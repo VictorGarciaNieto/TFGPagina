@@ -4,8 +4,13 @@ const modal = document.getElementById("otrosDatosModal");
 const closeModalButton = document.getElementById("closeModalBtn");
 const modalContent = document.querySelector("#otrosDatosModal .modal-content");
 const downloadButton = document.getElementById('downloadBtn');
+const newDiagramBtn = document.getElementById('newDiagramBtn');
+let nodeIdCounter = 1;
+let modalOpen = false;
 
 let network;
+let nodes = new vis.DataSet();
+let edges = new vis.DataSet();
 const container = document.getElementById("network");
 let data = {};
 const options = {};
@@ -14,11 +19,30 @@ const initialYaml = {
     title: "Nuevo Diagrama",
     jobid: "",
     melgen_input: {
-        ncg_input: [],
+        ncg_input: [
+            { id: 4, name: "N2" } 
+        ],
         control_volumes: [],
         control_functions: [],
         flow_paths: [],
-        external_data_files: []
+        external_data_files: [
+            {
+                name: "PRESSURES",
+                channels: 1,
+                mode: "WRITE",
+                file_specification: {
+                    file_name: "PRESSURES.DAT"
+                },
+                file_format: "8E20.12",
+                write_increment_control: {
+                    time_effective: 0.0,
+                    time_increment: 0.0
+                },
+                channel_variables: {
+                    A1: "CVH-P.1"
+                }
+            }
+        ]
     },
     melcor_input: {
         warning_level: 0,
@@ -42,12 +66,22 @@ const initialYaml = {
     debug: []
 };
 
+const draggables = document.querySelectorAll('.draggable');
 let yamlData = null;
 
 // Función para generar un ID único con prefijo
 const generatePrefixedId = (prefix, id) => {
     return `${prefix}_${id}`;
 };
+
+// Función para limpiar completamente el grafo
+function clearGraph() {
+    nodes.clear();
+    edges.clear();
+    if (network) {
+        network.destroy(); // Destruir instancia de Vis.js para evitar residuos
+    }
+}
 
 function handleFileUpload(event) {
     const file = event.target.files[0];
@@ -57,10 +91,7 @@ function handleFileUpload(event) {
         try {
             // Parseamos el archivo YAML cargado
             yamlData = jsyaml.load(e.target.result);
-
-            // Inicialización de nodos y aristas
-            const nodes = new vis.DataSet();
-            const edges = new vis.DataSet();
+            clearGraph();
 
             // Añadimos nodos de Control Volumes (CV)
             yamlData.melgen_input.control_volumes.forEach(cv => {
@@ -115,12 +146,7 @@ function handleFileUpload(event) {
                 });
             });
 
-            // Configuración del grafo
-            data = { nodes, edges };
-            network = new vis.Network(container, data, options);
-            console.log("Contenedor", container);
-
-            setupNetworkListeners();
+            initializeGraph();
         } catch (e) {
             alert('Error al leer el archivo YAML: ' + e.message);
         }
@@ -144,14 +170,23 @@ function setupNetworkListeners() {
     
             // Distinción entre nodos de Control Volumes y Control Functions
             if (nodeId.startsWith("cv")) {
-                console.log("Nodo de Control Volume seleccionado:", nodeId);
-                const editForm = createEditFormControlVolume(nodeId, node.label, node.properties, node.altitude_volume, (newProps, newAltitudeVolume) => {
-                    network.body.data.nodes.update({ 
-                        id: nodeId, 
-                        properties: newProps, 
-                        altitude_volume: newAltitudeVolume 
+
+                const controlVolumeId = nodeId.replace("cv_", "");
+                const controlVolume = yamlData.melgen_input.control_volumes.find(cv => cv.id === controlVolumeId);
+
+                const editForm = createEditFormControlVolume(
+                    controlVolume.id,
+                    controlVolume.name,
+                    controlVolume.properties,
+                    controlVolume.altitude_volume,
+                    (newProps, newAltitudeVolume) => {
+                        // Actualizar el nodo con los nuevos valores
+                        network.body.data.nodes.update({ 
+                            id: nodeId, 
+                            properties: newProps, 
+                            altitude_volume: newAltitudeVolume 
+                        });
                     });
-                });
     
                 const propertiesContent = document.getElementById('propertiesContent');
                 propertiesContent.innerHTML = editForm;
@@ -164,7 +199,7 @@ function setupNetworkListeners() {
                     let invalidFields = false;
     
                     // Validación de los campos MLFR
-                    Object.keys(node.properties).forEach(key => {
+                    Object.keys(controlVolume.properties).forEach(key => {
                         const input = document.getElementById(`edit-${key}`);
                         if (input) {
                             const value = input.value.trim();
@@ -200,13 +235,14 @@ function setupNetworkListeners() {
                     });
     
                     // Validación de altitude_volume
-                    Object.keys(node.altitude_volume).forEach(key => {
+                    Object.keys(controlVolume.altitude_volume).forEach(key => {
                         const keyInput = document.getElementById(`altitude-key-${key}`);
                         const valueInput = document.getElementById(`altitude-value-${key}`);
                         const keyValue = keyInput ? keyInput.value : '';
                         const valueValue = valueInput ? valueInput.value : '';
     
                         if (isNaN(keyValue) || isNaN(valueValue) || keyValue === '' || valueValue === '') {
+                            console.error('Error en validación. Contenido de altitude_volume:', controlVolume.altitudeVolume);
                             alert('Las claves y los valores deben ser números válidos.');
                             invalidFields = true;
                             return;
@@ -233,8 +269,19 @@ function setupNetworkListeners() {
                             const volume = parseFloat(value); // Convertimos el valor (volumen) a double
                             parsedAltitudeVolume[altitude] = volume;
                         }
-                        network.body.data.nodes.update({ id: nodeId, properties: parsedProps, altitude_volume: parsedAltitudeVolume });
-    
+
+                        const existingNode = network.body.data.nodes.get(nodeId);
+
+                        // Actualizar solo properties y altitude_volume sin perder otros datos
+                        network.body.data.nodes.update({ 
+                            id: nodeId, 
+                            properties: { ...existingNode.properties, ...parsedProps }, 
+                            altitude_volume: { ...existingNode.altitude_volume, ...parsedAltitudeVolume }
+                        });
+                        
+                        console.log("✅ Se ejecutó `network.body.data.nodes.update(...)`. Verificando nodos después de la actualización:");
+                        console.log(JSON.stringify(network.body.data.nodes.get(), null, 2));
+                        
                         const controlVolumeId = nodeId.replace(/^\D+/g, ""); // Extraer el ID (sin prefijo 'cv')
                         const controlVolume = yamlData.melgen_input.control_volumes.find(cv => cv.id === controlVolumeId);
     
@@ -243,6 +290,8 @@ function setupNetworkListeners() {
                             controlVolume.properties = { ...controlVolume.properties, ...parsedProps };
                             controlVolume.altitude_volume = { ...parsedAltitudeVolume };
                             
+                            syncMLFRProperties();
+
                             console.log("Control Volume actualizado:", controlVolume);
                             console.log("yamlData actualizado:", JSON.stringify(yamlData, null, 2));
                         }
@@ -612,12 +661,7 @@ const openModal = () => {
             yamlData.melgen_input.ncg_input.splice(index, 1);
             console.log(`Gas con ID ${gasIdToRemove} eliminado.`);
 
-            // Actualizar los volúmenes de control: eliminar MLFR.<gasIdToRemove>
-            yamlData.melgen_input.control_volumes.forEach((cv) => {
-                if (cv.properties && cv.properties[`MLFR.${gasIdToRemove}`]) {
-                    delete cv.properties[`MLFR.${gasIdToRemove}`];
-                }
-            });
+            syncMLFRProperties();
 
             console.log("Volúmenes de control actualizados tras eliminar gas:", yamlData.melgen_input.control_volumes);
 
@@ -637,15 +681,14 @@ const openModal = () => {
             yamlData.melgen_input.ncg_input.push({ id: selectedGasId, name: selectedGasName });
             console.log(`Gas añadido: { id: ${selectedGasId}, name: ${selectedGasName} }`);
 
-            // Actualizar los volúmenes de control: añadir MLFR.<selectedGasId> inicializado a 0.0
-            yamlData.melgen_input.control_volumes.forEach((cv) => {
-                if (!cv.properties) cv.properties = {};
-                if (!cv.properties[`MLFR.${selectedGasId}`]) {
-                    cv.properties[`MLFR.${selectedGasId}`] = 0.0;
-                }
-            });
+            syncMLFRProperties();
 
-            console.log("Volúmenes de control actualizados tras añadir gas:", yamlData.melgen_input.control_volumes);
+            console.log("🔄 Estado de `yamlData.melgen_input.control_volumes` después de añadir gas:", JSON.stringify(yamlData.melgen_input.control_volumes, null, 2));
+            console.log("🕵️ Estado de nodos en la red después de actualizar el gas:", JSON.stringify(network.body.data.nodes.get(), null, 2));
+
+            yamlData.melgen_input.control_volumes.forEach((cv, index) => {
+                console.log(`CV ${index + 1}:`, JSON.stringify(cv, null, 2));
+            });
 
             // Recargar el modal para reflejar los cambios
             openModal();
@@ -707,6 +750,8 @@ const openModal = () => {
         // Inicializar campos de channel variables
         updateChannelVariables(index, file.channels || 0);
     });
+
+    addCloseEventListener();
 };
 
 // Función para cerrar el modal
@@ -994,7 +1039,172 @@ otrosDatosButton.addEventListener("click", openModal);
 
 // Asignar el evento de carga de archivo al input
 document.getElementById('yamlFileInput').addEventListener('change', handleFileUpload);
+
 // Hacer que el botón dispare el clic en el input oculto
 document.getElementById('loadYamlBtn').addEventListener('click', function () {
     document.getElementById('yamlFileInput').click();
 });
+
+// Asignar evento al botón de "Nuevo Diagrama"
+newDiagramBtn.addEventListener('click', createNewDiagram);
+
+// Función para crear un nuevo diagrama desde cero
+function createNewDiagram() {
+    yamlData = JSON.parse(JSON.stringify(initialYaml)); // Clonar estructura base
+    clearGraph(); // Elimina cualquier nodo y arista previa
+
+    document.getElementById('propertiesContent').innerHTML = ""; // Limpiar panel de propiedades
+
+    console.log("Nuevo diagrama creado:", yamlData);
+    console.log("Estructura YAML inicial:", jsyaml.dump(yamlData));
+
+    initializeGraph(); // Inicializar nuevo grafo vacío
+}
+
+// Función para inicializar el grafo con nodos y aristas actuales
+function initializeGraph() {
+    setupDragAndDrop();
+    const data = { nodes, edges };
+    network = new vis.Network(container, data, options);
+    
+    setupNetworkListeners();
+}
+
+// Configurar eventos de Drag & Drop
+function setupDragAndDrop() {
+    const controlVolumeElement = document.getElementById("controlVolume");
+
+    controlVolumeElement.addEventListener("dragstart", (event) => {
+        event.dataTransfer.setData("text/plain", "control_volume");
+    });
+
+    container.addEventListener("dragover", (event) => event.preventDefault());
+
+    container.addEventListener("drop", (event) => {
+        event.preventDefault();
+        const nodeType = event.dataTransfer.getData("text/plain");
+        if (nodeType === "control_volume") {
+            const rect = container.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            openModalToAddControlVolume(x, y);
+        }
+    });
+}
+
+// Mostrar modal para ingresar nombre del Control Volume (CV)
+function openModalToAddControlVolume(x, y) {
+    if (modalOpen) {
+        return; // Si ya hay una ventana modal abierta, no abrir otra
+    }
+
+    modalOpen = true;
+
+    const modal = document.createElement("div");
+    modal.classList.add("modal");
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Agregar Control Volume</h2>
+            <label for="cvName">Nombre:</label>
+            <input type="text" id="cvName" required />
+            <button id="addCvBtn">Agregar</button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    modal.querySelector(".close-btn").addEventListener("click", () => {
+        modal.remove();
+        modalOpen = false;
+    });
+
+    modal.querySelector("#addCvBtn").addEventListener("click", () => {
+        const name = document.querySelector("#cvName").value.trim();
+        if (name) {
+            addControlVolume(name, x, y);
+            modal.remove();
+            modalOpen = false;
+        } else {
+            alert("Debe ingresar un nombre");
+        }
+    });
+}
+
+// Añadir un Control Volume al diagrama
+function addControlVolume(name, x, y) {
+    if (!network) {
+        console.error("Error: network aún no ha sido inicializado.");
+        return;
+    }
+
+    // Obtener el siguiente ID disponible
+    const nextIdNumber = yamlData.melgen_input.control_volumes.length + 1;
+    const newId = String(nextIdNumber).padStart(3, '0'); // Genera IDs como '001', '002',
+
+    const newNode = {
+        id: generatePrefixedId("cv", newId),
+        label: name,
+        shape: "box",
+        color: "#D9E2F3",
+        properties: {
+            PVOL: 0.0,
+            TATM: 0.0,
+            RHUM: 0.0,
+        },
+        altitude_volume: {
+            "0.0": 0.0,
+            "0.0": 0.0
+        },
+        x: x,
+        y: y
+    };
+
+    nodes.add(newNode);
+
+    const controlVolume = {
+        id: newId,
+        name: name,
+        properties: {
+            PVOL: 0.0,
+            TATM: 0.0,
+            RHUM: 0.0,
+        },
+        altitude_volume: {
+            "0.0": 0.0,
+            "0.0": 0.0
+        }
+    };
+
+    yamlData.melgen_input.ncg_input.forEach((gas) => {
+        controlVolume.properties[`MLFR.${gas.id}`] = 0.0;
+    });
+
+    // Aquí asumimos que ya tienes el objeto `data` donde se guardan los Control Volumes
+    yamlData.melgen_input.control_volumes.push(controlVolume);
+
+    console.log("yamlData actualizado:", JSON.stringify(yamlData, null, 2));
+}
+
+function syncMLFRProperties() {
+    const currentGases = yamlData.melgen_input.ncg_input.map(gas => `MLFR.${gas.id}`);
+    
+    yamlData.melgen_input.control_volumes.forEach(cv => {
+        if (!cv.properties) {
+            cv.properties = {};  // Si no tiene propiedades, inicializar objeto vacío
+        }
+
+        // **1. Añadir nuevas propiedades MLFR si no existen**
+        currentGases.forEach(mlfrKey => {
+            if (!(mlfrKey in cv.properties)) {
+                cv.properties[mlfrKey] = 0.0; // Valor por defecto
+            }
+        });
+
+        // **2. Eliminar MLFRs de gases que ya no existen**
+        Object.keys(cv.properties).forEach(key => {
+            if (key.startsWith("MLFR.") && !currentGases.includes(key)) {
+                delete cv.properties[key];
+            }
+        });
+    });
+}
