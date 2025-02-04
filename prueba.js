@@ -7,6 +7,8 @@ const downloadButton = document.getElementById('downloadBtn');
 const newDiagramBtn = document.getElementById('newDiagramBtn');
 let nodeIdCounter = 1;
 let modalOpen = false;
+let selectingFlowPath = false;
+let selectedNodes = [];
 
 let network;
 let nodes = new vis.DataSet();
@@ -159,423 +161,449 @@ function setupNetworkListeners() {
         return;
     }
     network.on("click", function (event) {
-        console.log("Se ha hecho click");
-        const { nodes: clickedNodes, edges: clickedEdges } = event;
-    
-        if (clickedNodes.length > 0) {
-            const nodeId = clickedNodes[0];
-            const node = network.body.data.nodes.get(nodeId);
-    
-            // Distinción entre nodos de Control Volumes y Control Functions
-            if (nodeId.startsWith("cv")) {
+        if(!selectingFlowPath){
 
-                const controlVolumeId = nodeId.replace("cv_", "");
-                const controlVolume = yamlData.melgen_input.control_volumes.find(cv => cv.id === controlVolumeId);
+            console.log("Se ha hecho click");
+            const { nodes: clickedNodes, edges: clickedEdges } = event;
+        
+            if (clickedNodes.length > 0) {
+                const nodeId = clickedNodes[0];
+                const node = network.body.data.nodes.get(nodeId);
+        
+                // Distinción entre nodos de Control Volumes y Control Functions
+                if (nodeId.startsWith("cv")) {
 
-                const editForm = createEditFormControlVolume(
-                    controlVolume.id,
-                    controlVolume.name,
-                    controlVolume.properties,
-                    controlVolume.altitude_volume,
-                    (newProps, newAltitudeVolume) => {
-                        // Actualizar el nodo con los nuevos valores
-                        network.body.data.nodes.update({ 
-                            id: nodeId, 
-                            properties: newProps, 
-                            altitude_volume: newAltitudeVolume 
+                    const controlVolumeId = nodeId.replace("cv_", "");
+                    const controlVolume = yamlData.melgen_input.control_volumes.find(cv => cv.id === controlVolumeId);
+
+                    const editForm = createEditFormControlVolume(
+                        controlVolume.id,
+                        controlVolume.name,
+                        controlVolume.properties,
+                        controlVolume.altitude_volume,
+                        (newProps, newAltitudeVolume) => {
+                            // Actualizar el nodo con los nuevos valores
+                            network.body.data.nodes.update({ 
+                                id: nodeId, 
+                                properties: newProps, 
+                                altitude_volume: newAltitudeVolume 
+                            });
                         });
+        
+                    const propertiesContent = document.getElementById('propertiesContent');
+                    propertiesContent.innerHTML = editForm;
+        
+                    document.getElementById("saveProperties").addEventListener("click", () => {
+                        const newProps = {};
+                        const newAltitudeVolume = {};
+                        let mlfrTotal = 0;
+                        let mlfrValid = true;
+                        let invalidFields = false;
+        
+                        // Validación de los campos MLFR
+                        Object.keys(controlVolume.properties).forEach(key => {
+                            const input = document.getElementById(`edit-${key}`);
+                            if (input) {
+                                const value = input.value.trim();
+                                
+                                // Verificación de que el valor no tiene letras o caracteres no válidos
+                                if (isNaN(value) || value === '') {
+                                    alert('El valor debe ser un número válido.');
+                                    invalidFields = true;
+                                    return; // Cancelar el cambio si no es un número
+                                }
+        
+                                // Comprobamos si el valor es negativo
+                                const numericValue = parseFloat(value);
+                                if (numericValue < 0) {
+                                    alert('El valor no puede ser negativo.');
+                                    invalidFields = true;
+                                    return; // Cancelar el cambio si el valor es negativo
+                                }
+        
+                                if (key.startsWith("MLFR")) {
+                                    // Comprobamos si el valor es numérico y está dentro del rango adecuado
+                                    if (isNaN(numericValue) || numericValue < 0.0 || numericValue > 1.0) {
+                                        mlfrValid = false;
+                                        alert('Los valores de MLFR deben ser numéricos y estar entre 0.0 y 1.0.');
+                                    } else {
+                                        mlfrTotal += numericValue;
+                                    }
+                                    
+                                }
+        
+                                newProps[key] = value; // Actualizar el valor de la propiedad
+                            }
+                        });
+        
+                        // Validación de altitude_volume
+                        Object.keys(controlVolume.altitude_volume).forEach(key => {
+                            const keyInput = document.getElementById(`altitude-key-${key}`);
+                            const valueInput = document.getElementById(`altitude-value-${key}`);
+                            const keyValue = keyInput ? keyInput.value : '';
+                            const valueValue = valueInput ? valueInput.value : '';
+        
+                            if (isNaN(keyValue) || isNaN(valueValue) || keyValue === '' || valueValue === '') {
+                                console.error('Error en validación. Contenido de altitude_volume:', controlVolume.altitudeVolume);
+                                alert('Las claves y los valores deben ser números válidos.');
+                                invalidFields = true;
+                                return;
+                            }
+        
+                            if (parseFloat(keyValue) < 0 || parseFloat(valueValue) < 0) {
+                                alert('Las claves y los valores no pueden ser negativos.');
+                                invalidFields = true;
+                                return;
+                            }
+        
+                            newAltitudeVolume[keyValue] = parseFloat(valueValue);
+                        });
+        
+                        if (mlfrValid && mlfrTotal === 1.0 && !invalidFields) {
+                            const parsedProps = {};
+                            for (const [key, value] of Object.entries(newProps)) {
+                                parsedProps[key] = parseFloat(value); // Convertimos cada propiedad a double
+                            }
+
+                            const parsedAltitudeVolume = {};
+                            for (const [key, value] of Object.entries(newAltitudeVolume)) {
+                                const altitude = parseFloat(key); // Convertimos la clave (altitud) a double
+                                const volume = parseFloat(value); // Convertimos el valor (volumen) a double
+                                parsedAltitudeVolume[altitude] = volume;
+                            }
+
+                            const existingNode = network.body.data.nodes.get(nodeId);
+
+                            // Actualizar solo properties y altitude_volume sin perder otros datos
+                            network.body.data.nodes.update({ 
+                                id: nodeId, 
+                                properties: { ...existingNode.properties, ...parsedProps }, 
+                                altitude_volume: { ...existingNode.altitude_volume, ...parsedAltitudeVolume }
+                            });
+                            
+                            console.log("✅ Se ejecutó `network.body.data.nodes.update(...)`. Verificando nodos después de la actualización:");
+                            console.log(JSON.stringify(network.body.data.nodes.get(), null, 2));
+                            
+                            const controlVolumeId = nodeId.replace(/^\D+/g, ""); // Extraer el ID (sin prefijo 'cv')
+                            const controlVolume = yamlData.melgen_input.control_volumes.find(cv => cv.id === controlVolumeId);
+        
+                            if (controlVolume) {
+                                // Actualizar únicamente properties y altitude_volume
+                                controlVolume.properties = { ...controlVolume.properties, ...parsedProps };
+                                controlVolume.altitude_volume = { ...parsedAltitudeVolume };
+                                
+                                syncMLFRProperties();
+
+                                console.log("Control Volume actualizado:", controlVolume);
+                                console.log("yamlData actualizado:", JSON.stringify(yamlData, null, 2));
+                            }
+        
+                            propertiesContent.innerHTML = "Cambios guardados.";
+                        }
                     });
-    
+        
+                    document.getElementById("cancelEdit").addEventListener("click", () => {
+                        propertiesContent.innerHTML = '';
+                    });
+        
+                } else if (nodeId.startsWith("cf")) {  
+                    const propertiesContent = document.getElementById('propertiesContent');
+                    propertiesContent.innerHTML = createEditFormControlFunction(nodeId, node.label, node.properties, (newProps) => {
+                        network.body.data.nodes.update({ id: nodeId, properties: newProps });
+                    });
+        
+                    // Generar argumentos dinámicamente
+                    const generateArgumentsForm = (numArguments, argumentsList) => {
+                        let argumentsForm = '<h5>Editar Argumentos:</h5>';
+                        for (let i = 0; i < numArguments; i++) {
+                            const arg = argumentsList[i] || { scale_factor: '', additive_constant: '', database_element: '' };
+                            argumentsForm += `
+                                <div class="argument-section">
+                                    <label>Argumento ${i + 1}:</label><br>
+                                    <label>Factor de escala: </label>
+                                    <input type="text" id="edit-arg-${i}-scale-factor" value="${arg.scale_factor}" /><br>
+                                    <label>Constante aditiva: </label>
+                                    <input type="text" id="edit-arg-${i}-additive-constant" value="${arg.additive_constant}" /><br>
+                                    <label>Elemento de base de datos: </label>
+                                    <input type="text" id="edit-arg-${i}-database-element" value="${arg.database_element}" /><br><br>
+                                </div>
+                            `;
+                        }
+                        document.getElementById('arguments-container').innerHTML = argumentsForm;
+                    };
+        
+                    // Inicializar argumentos
+                    generateArgumentsForm(node.properties.num_arguments, node.properties.arguments);
+        
+                    // Validar el número de argumentos al cambiar
+                    document.getElementById('edit-num-arguments').addEventListener('input', (event) => {
+                        const value = event.target.value.trim();
+                        const newNumArguments = parseInt(value, 10);
+        
+                        if (isNaN(newNumArguments) || newNumArguments < 0 || value !== String(newNumArguments)) {
+                            alert("El número de argumentos debe ser un número entero positivo.");
+                            event.target.value = node.properties.num_arguments || 0; // Restaurar valor previo
+                            return;
+                        }
+        
+                        generateArgumentsForm(newNumArguments, node.properties.arguments);
+                    });
+        
+                    // Manejo del evento de guardar
+                    document.getElementById("saveProperties").addEventListener("click", () => {
+                        let invalidFields = false;
+                        const newProps = {
+                            type: document.getElementById("edit-type").value.trim(),
+                            num_arguments: parseInt(document.getElementById("edit-num-arguments").value.trim(), 10),
+                            scale_factor: document.getElementById("edit-scale-factor").value.trim(),
+                            additive_constant: document.getElementById("edit-additive-constant").value.trim(),
+                            arguments: []
+                        };
+                    
+                        // Validar el número de argumentos: debe ser un entero positivo
+                        if (isNaN(newProps.num_arguments) || newProps.num_arguments < 0 || !Number.isInteger(newProps.num_arguments)) {
+                            alert("El número de argumentos debe ser un número entero positivo.");
+                            invalidFields = true;
+                        }
+                    
+                        // Validar el factor de escala: debe ser un número y no contener letras
+                        if (!/^-?\d+(\.\d+)?$/.test(newProps.scale_factor)) {
+                            alert("El Factor de Escala debe ser un número válido (sin letras ni caracteres especiales).");
+                            invalidFields = true;
+                        } else {
+                            newProps.scale_factor = parseFloat(newProps.scale_factor);
+                        }
+                    
+                        // Validar la constante aditiva: debe ser un número y no contener letras
+                        if (!/^-?\d+(\.\d+)?$/.test(newProps.additive_constant)) {
+                            alert("La Constante Aditiva debe ser un número válido (sin letras ni caracteres especiales).");
+                            invalidFields = true;
+                        } else {
+                            newProps.additive_constant = parseFloat(newProps.additive_constant);
+                        }
+                    
+                        // Validar y recopilar argumentos
+                        for (let i = 0; i < newProps.num_arguments; i++) {
+                            const scaleFactor = document.getElementById(`edit-arg-${i}-scale-factor`).value.trim();
+                            const additiveConstant = document.getElementById(`edit-arg-${i}-additive-constant`).value.trim();
+                            const databaseElement = document.getElementById(`edit-arg-${i}-database-element`).value.trim();
+                    
+                            // Validar Factor de Escala: debe ser un número
+                            if (!/^-?\d+(\.\d+)?$/.test(scaleFactor)) {
+                                alert(`El campo "Factor de Escala" del argumento ${i + 1} contiene valores inválidos. Solo se permiten números.`);
+                                invalidFields = true;
+                                break;
+                            }
+                    
+                            // Validar Constante Aditiva: debe ser un número
+                            if (!/^-?\d+(\.\d+)?$/.test(additiveConstant)) {
+                                alert(`El campo "Constante Aditiva" del argumento ${i + 1} contiene valores inválidos. Solo se permiten números.`);
+                                invalidFields = true;
+                                break;
+                            }
+                    
+                            // Validar Elemento de Base de Datos: solo debe contener caracteres alfabéticos
+                            if (!/^[a-zA-Z]+$/.test(databaseElement)) {
+                                alert(`El campo "Elemento de Base de Datos" del argumento ${i + 1} solo puede contener caracteres alfabéticos.`);
+                                invalidFields = true;
+                                break;
+                            }
+                    
+                            newProps.arguments.push({
+                                scale_factor: parseFloat(scaleFactor),
+                                additive_constant: parseFloat(additiveConstant),
+                                database_element: databaseElement
+                            });
+                        }
+                    
+                        if (!invalidFields) {
+                            network.body.data.nodes.update({ id: nodeId, properties: newProps });
+        
+                            // Actualizar la variable yamlData
+                            const controlFunctionId = nodeId.replace(/^\D+/g, ""); // Extraer ID sin prefijo
+                            const controlFunction = yamlData.melgen_input.control_functions.find(cf => cf.id === controlFunctionId);
+        
+                            if (controlFunction) {
+                                controlFunction.type = newProps.type;
+                                controlFunction.num_arguments = newProps.num_arguments;
+                                controlFunction.scale_factor = newProps.scale_factor;
+                                controlFunction.additive_constant = newProps.additive_constant;
+                                controlFunction.arguments = newProps.arguments;
+                                console.log("yamlData actualizado:", JSON.stringify(yamlData, null, 2));
+                            } else {
+                                console.error(`No se encontró una función de control con el ID ${controlFunctionId}`);
+                            }
+        
+                            propertiesContent.innerHTML = "Cambios guardados.";
+                        }
+                    });                        
+        
+                    // Manejo del evento de cancelar
+                    document.getElementById("cancelEdit").addEventListener("click", () => {
+                        propertiesContent.innerHTML = '';
+                    });
+        
+                }
+            } else if (clickedEdges.length > 0) {
+                const edgeId = clickedEdges[0];
+                const edge = network.body.data.edges.get(edgeId);
+        
+                // Generar el formulario de edición
+                const editForm = createEditFormFlowPath(
+                    edgeId,
+                    edge.label || "",
+                    edge.properties || {},
+                    edge.segment_parameters || {},
+                    edge.junction_limits || {},
+                    edge.time_dependent_flow_path || {}
+                );
+        
                 const propertiesContent = document.getElementById('propertiesContent');
                 propertiesContent.innerHTML = editForm;
-    
-                document.getElementById("saveProperties").addEventListener("click", () => {
+        
+                // Guardar cambios
+                document.getElementById("saveFlowPathProperties").addEventListener("click", () => {
+                    let invalidFields = false;
+        
+                    // Validar y actualizar propiedades
                     const newProps = {};
-                    const newAltitudeVolume = {};
-                    let mlfrTotal = 0;
-                    let mlfrValid = true;
-                    let invalidFields = false;
-    
-                    // Validación de los campos MLFR
-                    Object.keys(controlVolume.properties).forEach(key => {
-                        const input = document.getElementById(`edit-${key}`);
-                        if (input) {
-                            const value = input.value.trim();
-                            
-                            // Verificación de que el valor no tiene letras o caracteres no válidos
-                            if (isNaN(value) || value === '') {
-                                alert('El valor debe ser un número válido.');
-                                invalidFields = true;
-                                return; // Cancelar el cambio si no es un número
-                            }
-    
-                            // Comprobamos si el valor es negativo
-                            const numericValue = parseFloat(value);
-                            if (numericValue < 0) {
-                                alert('El valor no puede ser negativo.');
-                                invalidFields = true;
-                                return; // Cancelar el cambio si el valor es negativo
-                            }
-    
-                            if (key.startsWith("MLFR")) {
-                                // Comprobamos si el valor es numérico y está dentro del rango adecuado
-                                if (isNaN(numericValue) || numericValue < 0.0 || numericValue > 1.0) {
-                                    mlfrValid = false;
-                                    alert('Los valores de MLFR deben ser numéricos y estar entre 0.0 y 1.0.');
-                                } else {
-                                    mlfrTotal += numericValue;
-                                }
-                                
-                            }
-    
-                            newProps[key] = value; // Actualizar el valor de la propiedad
-                        }
-                    });
-    
-                    // Validación de altitude_volume
-                    Object.keys(controlVolume.altitude_volume).forEach(key => {
-                        const keyInput = document.getElementById(`altitude-key-${key}`);
-                        const valueInput = document.getElementById(`altitude-value-${key}`);
-                        const keyValue = keyInput ? keyInput.value : '';
-                        const valueValue = valueInput ? valueInput.value : '';
-    
-                        if (isNaN(keyValue) || isNaN(valueValue) || keyValue === '' || valueValue === '') {
-                            console.error('Error en validación. Contenido de altitude_volume:', controlVolume.altitudeVolume);
-                            alert('Las claves y los valores deben ser números válidos.');
-                            invalidFields = true;
-                            return;
-                        }
-    
-                        if (parseFloat(keyValue) < 0 || parseFloat(valueValue) < 0) {
-                            alert('Las claves y los valores no pueden ser negativos.');
-                            invalidFields = true;
-                            return;
-                        }
-    
-                        newAltitudeVolume[keyValue] = parseFloat(valueValue);
-                    });
-    
-                    if (mlfrValid && mlfrTotal === 1.0 && !invalidFields) {
-                        const parsedProps = {};
-                        for (const [key, value] of Object.entries(newProps)) {
-                            parsedProps[key] = parseFloat(value); // Convertimos cada propiedad a double
-                        }
-
-                        const parsedAltitudeVolume = {};
-                        for (const [key, value] of Object.entries(newAltitudeVolume)) {
-                            const altitude = parseFloat(key); // Convertimos la clave (altitud) a double
-                            const volume = parseFloat(value); // Convertimos el valor (volumen) a double
-                            parsedAltitudeVolume[altitude] = volume;
-                        }
-
-                        const existingNode = network.body.data.nodes.get(nodeId);
-
-                        // Actualizar solo properties y altitude_volume sin perder otros datos
-                        network.body.data.nodes.update({ 
-                            id: nodeId, 
-                            properties: { ...existingNode.properties, ...parsedProps }, 
-                            altitude_volume: { ...existingNode.altitude_volume, ...parsedAltitudeVolume }
-                        });
-                        
-                        console.log("✅ Se ejecutó `network.body.data.nodes.update(...)`. Verificando nodos después de la actualización:");
-                        console.log(JSON.stringify(network.body.data.nodes.get(), null, 2));
-                        
-                        const controlVolumeId = nodeId.replace(/^\D+/g, ""); // Extraer el ID (sin prefijo 'cv')
-                        const controlVolume = yamlData.melgen_input.control_volumes.find(cv => cv.id === controlVolumeId);
-    
-                        if (controlVolume) {
-                            // Actualizar únicamente properties y altitude_volume
-                            controlVolume.properties = { ...controlVolume.properties, ...parsedProps };
-                            controlVolume.altitude_volume = { ...parsedAltitudeVolume };
-                            
-                            syncMLFRProperties();
-
-                            console.log("Control Volume actualizado:", controlVolume);
-                            console.log("yamlData actualizado:", JSON.stringify(yamlData, null, 2));
-                        }
-    
-                        propertiesContent.innerHTML = "Cambios guardados.";
-                    }
-                });
-    
-                document.getElementById("cancelEdit").addEventListener("click", () => {
-                    propertiesContent.innerHTML = '';
-                });
-    
-            } else if (nodeId.startsWith("cf")) {  
-                const propertiesContent = document.getElementById('propertiesContent');
-                propertiesContent.innerHTML = createEditFormControlFunction(nodeId, node.label, node.properties, (newProps) => {
-                    network.body.data.nodes.update({ id: nodeId, properties: newProps });
-                });
-    
-                // Generar argumentos dinámicamente
-                const generateArgumentsForm = (numArguments, argumentsList) => {
-                    let argumentsForm = '<h5>Editar Argumentos:</h5>';
-                    for (let i = 0; i < numArguments; i++) {
-                        const arg = argumentsList[i] || { scale_factor: '', additive_constant: '', database_element: '' };
-                        argumentsForm += `
-                            <div class="argument-section">
-                                <label>Argumento ${i + 1}:</label><br>
-                                <label>Factor de escala: </label>
-                                <input type="text" id="edit-arg-${i}-scale-factor" value="${arg.scale_factor}" /><br>
-                                <label>Constante aditiva: </label>
-                                <input type="text" id="edit-arg-${i}-additive-constant" value="${arg.additive_constant}" /><br>
-                                <label>Elemento de base de datos: </label>
-                                <input type="text" id="edit-arg-${i}-database-element" value="${arg.database_element}" /><br><br>
-                            </div>
-                        `;
-                    }
-                    document.getElementById('arguments-container').innerHTML = argumentsForm;
-                };
-    
-                // Inicializar argumentos
-                generateArgumentsForm(node.properties.num_arguments, node.properties.arguments);
-    
-                // Validar el número de argumentos al cambiar
-                document.getElementById('edit-num-arguments').addEventListener('input', (event) => {
-                    const value = event.target.value.trim();
-                    const newNumArguments = parseInt(value, 10);
-    
-                    if (isNaN(newNumArguments) || newNumArguments < 0 || value !== String(newNumArguments)) {
-                        alert("El número de argumentos debe ser un número entero positivo.");
-                        event.target.value = node.properties.num_arguments || 0; // Restaurar valor previo
-                        return;
-                    }
-    
-                    generateArgumentsForm(newNumArguments, node.properties.arguments);
-                });
-    
-                // Manejo del evento de guardar
-                document.getElementById("saveProperties").addEventListener("click", () => {
-                    let invalidFields = false;
-                    const newProps = {
-                        type: document.getElementById("edit-type").value.trim(),
-                        num_arguments: parseInt(document.getElementById("edit-num-arguments").value.trim(), 10),
-                        scale_factor: document.getElementById("edit-scale-factor").value.trim(),
-                        additive_constant: document.getElementById("edit-additive-constant").value.trim(),
-                        arguments: []
-                    };
-                
-                    // Validar el número de argumentos: debe ser un entero positivo
-                    if (isNaN(newProps.num_arguments) || newProps.num_arguments < 0 || !Number.isInteger(newProps.num_arguments)) {
-                        alert("El número de argumentos debe ser un número entero positivo.");
-                        invalidFields = true;
-                    }
-                
-                    // Validar el factor de escala: debe ser un número y no contener letras
-                    if (!/^-?\d+(\.\d+)?$/.test(newProps.scale_factor)) {
-                        alert("El Factor de Escala debe ser un número válido (sin letras ni caracteres especiales).");
-                        invalidFields = true;
-                    } else {
-                        newProps.scale_factor = parseFloat(newProps.scale_factor);
-                    }
-                
-                    // Validar la constante aditiva: debe ser un número y no contener letras
-                    if (!/^-?\d+(\.\d+)?$/.test(newProps.additive_constant)) {
-                        alert("La Constante Aditiva debe ser un número válido (sin letras ni caracteres especiales).");
-                        invalidFields = true;
-                    } else {
-                        newProps.additive_constant = parseFloat(newProps.additive_constant);
-                    }
-                
-                    // Validar y recopilar argumentos
-                    for (let i = 0; i < newProps.num_arguments; i++) {
-                        const scaleFactor = document.getElementById(`edit-arg-${i}-scale-factor`).value.trim();
-                        const additiveConstant = document.getElementById(`edit-arg-${i}-additive-constant`).value.trim();
-                        const databaseElement = document.getElementById(`edit-arg-${i}-database-element`).value.trim();
-                
-                        // Validar Factor de Escala: debe ser un número
-                        if (!/^-?\d+(\.\d+)?$/.test(scaleFactor)) {
-                            alert(`El campo "Factor de Escala" del argumento ${i + 1} contiene valores inválidos. Solo se permiten números.`);
-                            invalidFields = true;
-                            break;
-                        }
-                
-                        // Validar Constante Aditiva: debe ser un número
-                        if (!/^-?\d+(\.\d+)?$/.test(additiveConstant)) {
-                            alert(`El campo "Constante Aditiva" del argumento ${i + 1} contiene valores inválidos. Solo se permiten números.`);
-                            invalidFields = true;
-                            break;
-                        }
-                
-                        // Validar Elemento de Base de Datos: solo debe contener caracteres alfabéticos
-                        if (!/^[a-zA-Z]+$/.test(databaseElement)) {
-                            alert(`El campo "Elemento de Base de Datos" del argumento ${i + 1} solo puede contener caracteres alfabéticos.`);
-                            invalidFields = true;
-                            break;
-                        }
-                
-                        newProps.arguments.push({
-                            scale_factor: parseFloat(scaleFactor),
-                            additive_constant: parseFloat(additiveConstant),
-                            database_element: databaseElement
-                        });
-                    }
-                
-                    if (!invalidFields) {
-                        network.body.data.nodes.update({ id: nodeId, properties: newProps });
-    
-                        // Actualizar la variable yamlData
-                        const controlFunctionId = nodeId.replace(/^\D+/g, ""); // Extraer ID sin prefijo
-                        const controlFunction = yamlData.melgen_input.control_functions.find(cf => cf.id === controlFunctionId);
-    
-                        if (controlFunction) {
-                            controlFunction.type = newProps.type;
-                            controlFunction.num_arguments = newProps.num_arguments;
-                            controlFunction.scale_factor = newProps.scale_factor;
-                            controlFunction.additive_constant = newProps.additive_constant;
-                            controlFunction.arguments = newProps.arguments;
-                            console.log("yamlData actualizado:", JSON.stringify(yamlData, null, 2));
-                        } else {
-                            console.error(`No se encontró una función de control con el ID ${controlFunctionId}`);
-                        }
-    
-                        propertiesContent.innerHTML = "Cambios guardados.";
-                    }
-                });                        
-    
-                // Manejo del evento de cancelar
-                document.getElementById("cancelEdit").addEventListener("click", () => {
-                    propertiesContent.innerHTML = '';
-                });
-    
-            }
-        } else if (clickedEdges.length > 0) {
-            const edgeId = clickedEdges[0];
-            const edge = network.body.data.edges.get(edgeId);
-    
-            // Generar el formulario de edición
-            const editForm = createEditFormFlowPath(
-                edgeId,
-                edge.label || "",
-                edge.properties || {},
-                edge.segment_parameters || {},
-                edge.junction_limits || {},
-                edge.time_dependent_flow_path || {}
-            );
-    
-            const propertiesContent = document.getElementById('propertiesContent');
-            propertiesContent.innerHTML = editForm;
-    
-            // Guardar cambios
-            document.getElementById("saveFlowPathProperties").addEventListener("click", () => {
-                let invalidFields = false;
-    
-                // Validar y actualizar propiedades
-                const newProps = {};
-                Object.keys(edge.properties || {}).forEach(key => {
-                    const input = document.getElementById(`edit-geometry-${key}`);
-                    if (input) {
-                        const value = input.value.trim();
-                        const numericValue = parseFloat(value);
-    
-                        // Verificación: Comprobar que el valor completo sea numérico y mayor que 0
-                        if (isNaN(numericValue) || value === '' || numericValue <= 0 || value !== String(numericValue)) {
-                            alert(`El valor de ${key} debe ser un número positivo válido.`);
-                            invalidFields = true;
-                        } else {
-                            newProps[key] = numericValue;
-                        }
-                    }
-                });
-    
-                // Validar y actualizar parámetros del segmento
-                const newSegmentParams = {};
-                Object.keys(edge.segment_parameters || {}).forEach(key => {
-                    const input = document.getElementById(`edit-segment-${key}`);
-                    if (input) {
-                        const value = input.value.trim();
-                        const numericValue = parseFloat(value);
-    
-                        // Verificación: Comprobar que el valor completo sea numérico y mayor que 0
-                        if (isNaN(numericValue) || value === '' || numericValue <= 0 || value !== String(numericValue)) {
-                            alert(`El valor de ${key} debe ser un número positivo válido.`);
-                            invalidFields = true;
-                        } else {
-                            newSegmentParams[key] = numericValue;
-                        }
-                    }
-                });
-    
-                // Validar y actualizar límites de la unión
-                const newJunctionLimits = {};
-                Object.keys(edge.junction_limits || {}).forEach(key => {
-                    newJunctionLimits[key] = {};
-                    Object.keys(edge.junction_limits[key] || {}).forEach(subKey => {
-                        const input = document.getElementById(`edit-junction-${key}-${subKey}`);
+                    Object.keys(edge.properties || {}).forEach(key => {
+                        const input = document.getElementById(`edit-geometry-${key}`);
                         if (input) {
                             const value = input.value.trim();
                             const numericValue = parseFloat(value);
-    
+        
                             // Verificación: Comprobar que el valor completo sea numérico y mayor que 0
                             if (isNaN(numericValue) || value === '' || numericValue <= 0 || value !== String(numericValue)) {
-                                alert(`El valor de ${key} - ${subKey} debe ser un número positivo válido.`);
+                                alert(`El valor de ${key} debe ser un número positivo válido.`);
                                 invalidFields = true;
                             } else {
-                                newJunctionLimits[key][subKey] = numericValue;
+                                newProps[key] = numericValue;
                             }
                         }
                     });
-                });
-    
-                // Validar y actualizar flujo dependiente del tiempo
-                const newTimeDependentFlowPath = {};
-                Object.keys(edge.time_dependent_flow_path || {}).forEach(key => {
-                    const input = document.getElementById(`edit-time-dependent-${key}`);
-                    if (input) {
-                        const value = input.value.trim();
-                        const numericValue = parseFloat(value);
-    
-                        // Verificación: Comprobar que el valor completo sea numérico y mayor que 0
-                        if (isNaN(numericValue) || value === '' || numericValue <= 0 || value !== String(numericValue)) {
-                            alert(`El valor de ${key} debe ser un número positivo válido.`);
-                            invalidFields = true;
-                        } else {
-                            newTimeDependentFlowPath[key] = numericValue;
+        
+                    // Validar y actualizar parámetros del segmento
+                    const newSegmentParams = {};
+                    Object.keys(edge.segment_parameters || {}).forEach(key => {
+                        const input = document.getElementById(`edit-segment-${key}`);
+                        if (input) {
+                            const value = input.value.trim();
+                            const numericValue = parseFloat(value);
+        
+                            // Verificación: Comprobar que el valor completo sea numérico y mayor que 0
+                            if (isNaN(numericValue) || value === '' || numericValue <= 0 || value !== String(numericValue)) {
+                                alert(`El valor de ${key} debe ser un número positivo válido.`);
+                                invalidFields = true;
+                            } else {
+                                newSegmentParams[key] = numericValue;
+                            }
                         }
+                    });
+        
+                    // Validar y actualizar límites de la unión
+                    const newJunctionLimits = {};
+                    Object.keys(edge.junction_limits || {}).forEach(key => {
+                        newJunctionLimits[key] = {};
+                        Object.keys(edge.junction_limits[key] || {}).forEach(subKey => {
+                            const input = document.getElementById(`edit-junction-${key}-${subKey}`);
+                            if (input) {
+                                const value = input.value.trim();
+                                const numericValue = parseFloat(value);
+        
+                                // Verificación: Comprobar que el valor completo sea numérico y mayor que 0
+                                if (isNaN(numericValue) || value === '' || numericValue <= 0 || value !== String(numericValue)) {
+                                    alert(`El valor de ${key} - ${subKey} debe ser un número positivo válido.`);
+                                    invalidFields = true;
+                                } else {
+                                    newJunctionLimits[key][subKey] = numericValue;
+                                }
+                            }
+                        });
+                    });
+        
+                    // Validar y actualizar flujo dependiente del tiempo
+                    const newTimeDependentFlowPath = {};
+                    Object.keys(edge.time_dependent_flow_path || {}).forEach(key => {
+                        const input = document.getElementById(`edit-time-dependent-${key}`);
+                        if (input) {
+                            const value = input.value.trim();
+                            const numericValue = parseFloat(value);
+        
+                            // Verificación: Comprobar que el valor completo sea numérico y mayor que 0
+                            if (isNaN(numericValue) || value === '' || numericValue <= 0 || value !== String(numericValue)) {
+                                alert(`El valor de ${key} debe ser un número positivo válido.`);
+                                invalidFields = true;
+                            } else {
+                                newTimeDependentFlowPath[key] = numericValue;
+                            }
+                        }
+                    });
+        
+                    if (!invalidFields) {
+                        // Actualizar la información del edge
+                        network.body.data.edges.update({
+                            id: edgeId,
+                            properties: newProps,
+                            segment_parameters: newSegmentParams,
+                            junction_limits: newJunctionLimits,
+                            time_dependent_flow_path: newTimeDependentFlowPath
+                        });
+        
+                        // Actualizar yamlData
+                        const flowPathId = edgeId.replace(/^\D+/g, "");
+                        const flowPath = yamlData.melgen_input.flow_paths.find(fp => fp.id === flowPathId);
+        
+                        if (flowPath) {
+                            flowPath.geometry = { ...newProps };
+                            flowPath.segment_parameters = { ...newSegmentParams };
+                            flowPath.junction_limits = { ...newJunctionLimits };
+                            flowPath.time_dependent_flow_path = { ...newTimeDependentFlowPath };
+        
+                            console.log("Flow Path actualizado:", flowPath);
+                            console.log("yamlData actualizado:", JSON.stringify(yamlData, null, 2));
+                        } else {
+                            console.error(`No se encontró el Flow Path con ID: ${flowPathId}`);
+                        }
+        
+        
+                        propertiesContent.innerHTML = "Cambios guardados.";
                     }
                 });
-    
-                if (!invalidFields) {
-                    // Actualizar la información del edge
-                    network.body.data.edges.update({
-                        id: edgeId,
-                        properties: newProps,
-                        segment_parameters: newSegmentParams,
-                        junction_limits: newJunctionLimits,
-                        time_dependent_flow_path: newTimeDependentFlowPath
-                    });
-    
-                    // Actualizar yamlData
-                    const flowPathId = edgeId.replace(/^\D+/g, "");
-                    const flowPath = yamlData.melgen_input.flow_paths.find(fp => fp.id === flowPathId);
-    
-                    if (flowPath) {
-                        flowPath.geometry = { ...newProps };
-                        flowPath.segment_parameters = { ...newSegmentParams };
-                        flowPath.junction_limits = { ...newJunctionLimits };
-                        flowPath.time_dependent_flow_path = { ...newTimeDependentFlowPath };
-    
-                        console.log("Flow Path actualizado:", flowPath);
-                        console.log("yamlData actualizado:", JSON.stringify(yamlData, null, 2));
-                    } else {
-                        console.error(`No se encontró el Flow Path con ID: ${flowPathId}`);
-                    }
-    
-    
-                    propertiesContent.innerHTML = "Cambios guardados.";
-                }
-            });
-    
-            // Cancelar edición
-            document.getElementById("cancelEditFlowPath").addEventListener("click", () => {
-                propertiesContent.innerHTML = '';
-            });
-        } else {
-            document.getElementById('propertiesContent').innerHTML = '';
+        
+                // Cancelar edición
+                document.getElementById("cancelEditFlowPath").addEventListener("click", () => {
+                    propertiesContent.innerHTML = '';
+                });
+            } else {
+                document.getElementById('propertiesContent').innerHTML = '';
+            }
+        }
+        else{
+            // Accedemos a los nodos del evento
+            const nodeId = event.nodes[0];
+
+            if (!nodeId){
+                selectingFlowPath = false
+                return; // No se hizo click en un nodo
+            }
+
+            const node = nodes.get(nodeId);
+            if (!nodeId.startsWith("cv")) {
+                alert("Debes seleccionar únicamente Control Volumes.");
+                selectingFlowPath = false;
+                return;
+            }
+            else{
+                selectedNodes.push(nodeId);
+            }            
+
+            if (selectedNodes.length === 2) {
+                selectingFlowPath = false; // Se completó la selección
+                openModalToAddEdge(selectedNodes[0], selectedNodes[1]);
+            }
         }
     });
-
 }
 
 downloadButton.addEventListener('click', () => {
@@ -1141,6 +1169,40 @@ function openModalToAddNode(nodeType, x, y) {
     });
 }
 
+function openModalToAddEdge(fromNodeId, toNodeId) {
+    if (modalOpen) return;
+
+    modalOpen = true;
+    const modal = document.createElement("div");
+    modal.classList.add("modal");
+    modal.innerHTML = `
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Agregar Flow Path</h2>
+            <label for="flowPathName">Nombre:</label>
+            <input type="text" id="flowPathName" required />
+            <button id="addFlowPathBtn">Agregar</button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    modal.querySelector(".close-btn").addEventListener("click", () => {
+        modal.remove();
+        modalOpen = false;
+    });
+
+    modal.querySelector("#addFlowPathBtn").addEventListener("click", () => {
+        const name = document.querySelector("#flowPathName").value.trim();
+        if (name) {
+            addFlowPath(name, fromNodeId, toNodeId);
+            modal.remove();
+            modalOpen = false;
+        } else {
+            alert("Debe ingresar un nombre");
+        }
+    });
+}
+
 // Añadir un Control Volume al diagrama
 function addControlVolume(name, x, y) {
     if (!network) {
@@ -1175,6 +1237,7 @@ function addControlVolume(name, x, y) {
     const controlVolume = {
         id: newId,
         name: name,
+        type: 2,
         properties: {
             PVOL: 0.0,
             TATM: 0.0,
@@ -1250,6 +1313,90 @@ function addControlFunction(name, x, y) {
     yamlData.melgen_input.control_functions.push(controlFunction);
     console.log("yamlData actualizado:", JSON.stringify(yamlData, null, 2));
 }
+
+function addFlowPath(name, fromNodeId, toNodeId) {
+    const nextIdNumber = yamlData.melgen_input.flow_paths.length + 1;
+    const newId = String(nextIdNumber).padStart(3, "0");
+
+    // Crear el edge en el diagrama
+    edges.add({
+        id: generatePrefixedId("fp", newId),
+        from: fromNodeId,
+        to: toNodeId,
+        label: name,
+        type: "flow_path",
+        properties: {
+            area: 1.0,
+            length: 1.0,
+            fraction_open: 1.0
+        },
+        segment_parameters: {
+            area: 1.0,
+            length: 1.0,
+            hydraulic_diameter: 1.0
+        },
+        junction_limits: {
+            from_volume: {
+                bottom_opening_elevation: 1.0,
+                top_opening_elevation: 1.0
+            },
+            to_volume: {
+                bottom_opening_elevation: 1.0,
+                top_opening_elevation: 1.0
+            }
+        },
+        time_dependent_flow_path: {
+            type_flag: 2,
+            function_number: 1
+        }
+    });
+
+    // Agregar al YAML
+    const flowPath = {
+        id: newId,
+        name: name,
+        from_control_volume: {
+            id: fromNodeId.replace("cv_", ""),
+            height: 4.25
+        },
+        to_control_volume: {
+            id: toNodeId.replace("cv_", ""),
+            height: 4.25
+        },
+        geometry: {
+            area: 1.0,
+            length: 1.0,
+            fraction_open: 1.0
+        },
+        segment_parameters: {
+            area: 1.0,
+            length: 1.0,
+            hydraulic_diameter: 1.0
+        },
+        junction_limits: {
+            from_volume: {
+                bottom_opening_elevation: 3.75,
+                top_opening_elevation: 4.75
+            },
+            to_volume: {
+                bottom_opening_elevation: 3.75,
+                top_opening_elevation: 4.75
+            }
+        },
+        time_dependent_flow_path: {
+            type_flag: 2,
+            function_number: 1
+        }
+    };
+
+    yamlData.melgen_input.flow_paths.push(flowPath);
+    console.log("Flow Path añadido al YAML:", JSON.stringify(yamlData, null, 2));
+}
+
+document.getElementById("flowPathBtn").addEventListener("click", () => {
+    selectingFlowPath = true;
+    selectedNodes = [];
+});
 
 function syncMLFRProperties() {
     const currentGases = yamlData.melgen_input.ncg_input.map(gas => `MLFR.${gas.id}`);

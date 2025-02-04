@@ -222,3 +222,28 @@ input[type="text"], input[type="number"] {
     border: 1px solid #cbd5e1;
     user-select: none;
 }
+
+.flow-path-button {
+    display: inline-flex;  /* Asegura que el contenido esté en línea */
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;  /* Evita que el texto se divida en varias líneas */
+    width: 120px;
+    height: 40px;
+    background-color: gray;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  .flow-path-button:hover {
+    background-color: #505050;
+  }
+  
+  .flow-path-button:active {
+    background-color: #303030;
+  }
