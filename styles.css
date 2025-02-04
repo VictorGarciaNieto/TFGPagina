@@ -211,3 +211,14 @@ input[type="text"], input[type="number"] {
     text-align: center;
 }
 
+.control-function-box {
+    background-color: pink;
+    width: 120px;
+    height: 40px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 40px;
+    cursor: grab;
+    border: 1px solid #cbd5e1;
+    user-select: none;
+}

@@ -19,9 +19,7 @@ const initialYaml = {
     title: "Nuevo Diagrama",
     jobid: "",
     melgen_input: {
-        ncg_input: [
-            { id: 4, name: "N2" } 
-        ],
+        ncg_input: [],
         control_volumes: [],
         control_functions: [],
         flow_paths: [],
@@ -1073,9 +1071,15 @@ function initializeGraph() {
 // Configurar eventos de Drag & Drop
 function setupDragAndDrop() {
     const controlVolumeElement = document.getElementById("controlVolume");
+    const controlFunctionElement = document.getElementById("controlFunction");
 
     controlVolumeElement.addEventListener("dragstart", (event) => {
         event.dataTransfer.setData("text/plain", "control_volume");
+    });
+
+    // Habilitar arrastre para Control Function (CF)
+    controlFunctionElement.addEventListener("dragstart", (event) => {
+        event.dataTransfer.setData("text/plain", "control_function");
     });
 
     container.addEventListener("dragover", (event) => event.preventDefault());
@@ -1083,19 +1087,22 @@ function setupDragAndDrop() {
     container.addEventListener("drop", (event) => {
         event.preventDefault();
         const nodeType = event.dataTransfer.getData("text/plain");
+        const rect = container.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+
         if (nodeType === "control_volume") {
-            const rect = container.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
-            openModalToAddControlVolume(x, y);
+            openModalToAddNode("Control Volume", x, y);
+        } else if (nodeType === "control_function") {
+            openModalToAddNode("Control Function", x, y);
         }
     });
 }
 
-// Mostrar modal para ingresar nombre del Control Volume (CV)
-function openModalToAddControlVolume(x, y) {
+// Mostrar modal para ingresar nombre del nodo (CV o CF)
+function openModalToAddNode(nodeType, x, y) {
     if (modalOpen) {
-        return; // Si ya hay una ventana modal abierta, no abrir otra
+        return;
     }
 
     modalOpen = true;
@@ -1105,23 +1112,27 @@ function openModalToAddControlVolume(x, y) {
     modal.innerHTML = `
         <div class="modal-content">
             <span class="close-btn">&times;</span>
-            <h2>Agregar Control Volume</h2>
-            <label for="cvName">Nombre:</label>
-            <input type="text" id="cvName" required />
-            <button id="addCvBtn">Agregar</button>
+            <h2>Agregar ${nodeType}</h2>
+            <label for="nodeName">Nombre:</label>
+            <input type="text" id="nodeName" required />
+            <button id="addNodeBtn">Agregar</button>
         </div>
     `;
     document.body.appendChild(modal);
-    
+
     modal.querySelector(".close-btn").addEventListener("click", () => {
         modal.remove();
         modalOpen = false;
     });
 
-    modal.querySelector("#addCvBtn").addEventListener("click", () => {
-        const name = document.querySelector("#cvName").value.trim();
+    modal.querySelector("#addNodeBtn").addEventListener("click", () => {
+        const name = document.querySelector("#nodeName").value.trim();
         if (name) {
-            addControlVolume(name, x, y);
+            if (nodeType === "Control Volume") {
+                addControlVolume(name, x, y);
+            } else if (nodeType === "Control Function") {
+                addControlFunction(name, x, y);
+            }
             modal.remove();
             modalOpen = false;
         } else {
@@ -1153,7 +1164,7 @@ function addControlVolume(name, x, y) {
         },
         altitude_volume: {
             "0.0": 0.0,
-            "0.0": 0.0
+            "1.0": 1.0
         },
         x: x,
         y: y
@@ -1171,7 +1182,7 @@ function addControlVolume(name, x, y) {
         },
         altitude_volume: {
             "0.0": 0.0,
-            "0.0": 0.0
+            "1.0": 1.0
         }
     };
 
@@ -1182,6 +1193,61 @@ function addControlVolume(name, x, y) {
     // Aquí asumimos que ya tienes el objeto `data` donde se guardan los Control Volumes
     yamlData.melgen_input.control_volumes.push(controlVolume);
 
+    console.log("yamlData actualizado:", JSON.stringify(yamlData, null, 2));
+}
+
+// Añadir una Control Function al diagrama
+function addControlFunction(name, x, y) {
+    if (!network) {
+        console.error("Error: network aún no ha sido inicializado.");
+        return;
+    }
+
+    const nextIdNumber = yamlData.melgen_input.control_functions.length + 1;
+    const newId = String(nextIdNumber).padStart(3, '0');
+
+    const newNode = {
+        id: generatePrefixedId("cf", newId),
+        label: name,
+        shape: "circle",
+        color: "#F5A5D5",
+        type: 'control_function', // Asegurar compatibilidad
+        properties: {
+            type: "EQUALS",
+            sinks: [],
+            num_arguments: 1,
+            scale_factor: 1.0,
+            additive_constant: 0.0,
+            arguments: [
+                {
+                    scale_factor: 0.0,
+                    additive_constant: 1.0,
+                    database_element: "TIME"
+                }
+            ]
+        }
+    };
+
+    nodes.add(newNode);
+
+    const controlFunction = {
+        id: newId,
+        name: name,
+        type: "EQUALS",
+        sinks: [],
+        num_arguments: 1,
+        scale_factor: 1.0,
+        additive_constant: 0.0,
+        arguments: [
+            {
+                scale_factor: 0.0,
+                additive_constant: 1.0,
+                database_element: "TIME"
+            }
+        ]
+    };
+
+    yamlData.melgen_input.control_functions.push(controlFunction);
     console.log("yamlData actualizado:", JSON.stringify(yamlData, null, 2));
 }
 
