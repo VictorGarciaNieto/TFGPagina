@@ -5,6 +5,9 @@ const closeModalButton = document.getElementById("closeModalBtn");
 const modalContent = document.querySelector("#otrosDatosModal .modal-content");
 const downloadButton = document.getElementById('downloadBtn');
 const newDiagramBtn = document.getElementById('newDiagramBtn');
+const deleteButton = document.getElementById("deleteButton");
+const propertiesContent = document.getElementById('propertiesContent');
+
 let nodeIdCounter = 1;
 let modalOpen = false;
 let selectingFlowPath = false;
@@ -189,8 +192,7 @@ function setupNetworkListeners() {
                                 altitude_volume: newAltitudeVolume 
                             });
                         });
-        
-                    const propertiesContent = document.getElementById('propertiesContent');
+    
                     propertiesContent.innerHTML = editForm;
         
                     document.getElementById("saveProperties").addEventListener("click", () => {
@@ -258,7 +260,13 @@ function setupNetworkListeners() {
         
                             newAltitudeVolume[keyValue] = parseFloat(valueValue);
                         });
-        
+                        
+                        // Verificación de que la suma de los valores MLFR es exactamente 1.0
+                        if (mlfrValid && mlfrTotal !== 1.0) {
+                            alert('La suma de todos los valores de MLFR debe ser exactamente 1.0.');
+                            return; // Detener la ejecución si la condición no se cumple
+                        }
+
                         if (mlfrValid && mlfrTotal === 1.0 && !invalidFields) {
                             const parsedProps = {};
                             for (const [key, value] of Object.entries(newProps)) {
@@ -608,6 +616,17 @@ function setupNetworkListeners() {
 
 downloadButton.addEventListener('click', () => {
     try {
+        // Pedir al usuario el nombre del archivo
+        let fileName = prompt("Introduce el nombre del archivo (sin extensión):", "datos_actualizados");
+        
+        // Si el usuario cancela o deja el campo vacío, se usa un nombre predeterminado
+        if (!fileName || fileName.trim() === "") {
+            fileName = "datos_actualizados";
+        }
+
+        // Asegurar que la extensión sea .yaml
+        fileName = fileName.trim() + ".yaml";
+
         // Convertir yamlData a formato YAML
         const yamlContent = jsyaml.dump(yamlData);
 
@@ -617,7 +636,7 @@ downloadButton.addEventListener('click', () => {
         // Crear un enlace de descarga temporal
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = 'datos_actualizados.yaml';  // Nombre del archivo descargado
+        link.download = fileName;  // Usar el nombre ingresado por el usuario
 
         // Simular clic en el enlace para iniciar la descarga
         link.click();
@@ -1147,6 +1166,7 @@ function openModalToAddNode(nodeType, x, y) {
         </div>
     `;
     document.body.appendChild(modal);
+    centerModal(modal);
 
     modal.querySelector(".close-btn").addEventListener("click", () => {
         modal.remove();
@@ -1185,6 +1205,7 @@ function openModalToAddEdge(fromNodeId, toNodeId) {
         </div>
     `;
     document.body.appendChild(modal);
+    centerModal(modal);
 
     modal.querySelector(".close-btn").addEventListener("click", () => {
         modal.remove();
@@ -1420,4 +1441,80 @@ function syncMLFRProperties() {
             }
         });
     });
+}
+
+deleteButton.addEventListener("click", function (event) {
+    const selectedNodes = network.getSelectedNodes();
+    const selectedEdges = network.getSelectedEdges();
+
+    if (selectedNodes.length > 0) {
+        const nodeId = selectedNodes[0];
+        removeElementFromGraph(nodeId, 'node');
+    } else if (selectedEdges.length > 0) {
+        const edgeId = selectedEdges[0];
+        removeElementFromGraph(edgeId, 'edge');
+    }
+    propertiesContent.innerHTML = "";
+});
+
+function removeElementFromGraph(elementId, type) {
+    if (type === 'node') {
+        // Eliminar nodo del dataset
+        nodes.remove({ id: elementId });
+
+        // Extraer el prefijo e ID real
+        const [prefix, id] = elementId.split("_");
+        
+        // Eliminar del YAML
+        if (prefix === "cv") {
+            yamlData.melgen_input.control_volumes = yamlData.melgen_input.control_volumes.filter(cv => cv.id !== id);
+            removeConnectedFlowPaths(id);
+        } else if (prefix === "cf") {
+            yamlData.melgen_input.control_functions = yamlData.melgen_input.control_functions.filter(cf => cf.id !== id);
+        }
+    } else if (type === 'edge') {
+        // Eliminar arista del dataset
+        edges.remove({ id: elementId });
+
+        // Extraer el prefijo e ID real
+        const [prefix, id] = elementId.split("_");
+        
+        // Eliminar del YAML
+        if (prefix === "fp") {
+            yamlData.melgen_input.flow_paths = yamlData.melgen_input.flow_paths.filter(fp => fp.id !== id);
+        }
+    }
+}
+
+function removeConnectedFlowPaths(controlVolumeId) {
+    // Filtrar Flow Paths que están conectados al Control Volume eliminado
+    const flowPathsToRemove = yamlData.melgen_input.flow_paths.filter(fp => 
+        fp.from_control_volume.id === controlVolumeId || fp.to_control_volume.id === controlVolumeId
+    );
+    
+    // Eliminar Flow Paths del dataset gráfico
+    flowPathsToRemove.forEach(fp => {
+        const prefixedId = generatePrefixedId("fp", fp.id);
+        edges.remove({ id: prefixedId });
+    });
+    
+    // Eliminar Flow Paths del YAML
+    yamlData.melgen_input.flow_paths = yamlData.melgen_input.flow_paths.filter(fp => 
+        fp.from_control_volume.id !== controlVolumeId && fp.to_control_volume.id !== controlVolumeId
+    );
+}
+
+// Función para centrar el elemento
+function centerModal(modal) {
+    modal.style.position = 'absolute';
+    modal.style.top = '50%'; // Posición vertical al 50% de la ventana
+    modal.style.left = '50%'; // Posición horizontal al 50% de la ventana
+    modal.style.transform = 'translate(-50%, -50%)'; // Mueve el elemento hacia el centro
+    modal.style.zIndex = 9999; // Asegurarse de que esté por encima de otros elementos
+    modal.style.width = '400px';  // Establece el tamaño del modal
+    modal.style.padding = '20px'; // Añade espacio alrededor del contenido
+    modal.style.backgroundColor = '#fff'; // Fondo blanco para el modal
+    modal.style.border = '1px solid #ccc'; // Borde gris
+    modal.style.borderRadius = '8px'; // Bordes redondeados
+    modal.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)'; // Sombra suave
 }
