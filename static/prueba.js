@@ -48,21 +48,21 @@ const initialYaml = {
         ]
     },
     melcor_input: {
-        warning_level: 0,
+        warning_level: 2,
         cpu_settings: {
-            cpu_left: 0.0,
-            cpu_lim: 0.0,
-            cymesf: []
+            cpu_left: 100.0,
+            cpu_lim: 100000.0,
+            cymesf: [100, 100]
         },
         time_settings: {
-            tend: 0.0,
+            tend: 5000.0,
             time1: {
                 time: 0.0,
-                dtmax: 0.0,
-                dtmin: 0.0,
-                dtedt: 0.0,
-                dtplt: 0.0,
-                dtrst: 0.0
+                dtmax: 1.0,
+                dtmin: 1.0,
+                dtedt: 1.0,
+                dtplt: 1.0,
+                dtrst: 1.0
             }
         }
     },
