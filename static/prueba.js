@@ -86,76 +86,71 @@ function clearGraph() {
     }
 }
 
-function handleFileUpload(event) {
-    const file = event.target.files[0];
-    const reader = new FileReader();
+// Nueva función que procesa directamente el string YAML
+function handleFileUpload(yamlString) {
+    try {
+        console.log("Contenido del YAML leído:", yamlString);
+        yamlData = jsyaml.load(yamlString);
+        console.log("YAML parseado:", yamlData);
+        clearGraph();
 
-    reader.onload = function (e) {
-        try {
-            // Parseamos el archivo YAML cargado
-            yamlData = jsyaml.load(e.target.result);
-            clearGraph();
-
-            // Añadimos nodos de Control Volumes (CV)
-            yamlData.melgen_input.control_volumes.forEach(cv => {
-                const prefixedId = generatePrefixedId("cv", cv.id);
-                nodes.add({
-                    id: prefixedId,
-                    label: cv.name,
-                    shape: "box",
-                    color: "#D9E2F3",
-                    properties: cv.properties,
-                    altitude_volume: cv.altitude_volume,
-                    type: 'control_volume'
-                });
+        // Añadimos nodos de Control Volumes (CV)
+        yamlData.melgen_input.control_volumes.forEach(cv => {
+            const prefixedId = generatePrefixedId("cv", cv.id);
+            nodes.add({
+                id: prefixedId,
+                label: cv.name,
+                shape: "box",
+                color: "#D9E2F3",
+                properties: cv.properties,
+                altitude_volume: cv.altitude_volume,
+                type: 'control_volume'
             });
+        });
 
-            // Añadimos nodos de Control Functions (CF)
-            yamlData.melgen_input.control_functions.forEach(cf => {
-                const prefixedId = generatePrefixedId("cf", cf.id);
-                nodes.add({
-                    id: prefixedId,
-                    label: cf.name,
-                    shape: "circle",
-                    color: "#F5A5D5",
-                    properties: {
-                        type: cf.type,
-                        sinks: cf.sinks,
-                        num_arguments: cf.num_arguments,
-                        scale_factor: cf.scale_factor,
-                        additive_constant: cf.additive_constant,
-                        arguments: cf.arguments
-                    },
-                    type: 'control_function'
-                });
+        // Añadimos nodos de Control Functions (CF)
+        yamlData.melgen_input.control_functions.forEach(cf => {
+            const prefixedId = generatePrefixedId("cf", cf.id);
+            nodes.add({
+                id: prefixedId,
+                label: cf.name,
+                shape: "circle",
+                color: "#F5A5D5",
+                properties: {
+                    type: cf.type,
+                    sinks: cf.sinks,
+                    num_arguments: cf.num_arguments,
+                    scale_factor: cf.scale_factor,
+                    additive_constant: cf.additive_constant,
+                    arguments: cf.arguments
+                },
+                type: 'control_function'
             });
+        });
 
-            // Añadimos aristas de Flow Paths (FP)
-            yamlData.melgen_input.flow_paths.forEach(fp => {
-                const fromControlVolumeId = generatePrefixedId("cv", fp.from_control_volume.id);
-                const toControlVolumeId = generatePrefixedId("cv", fp.to_control_volume.id);
-                const prefixedId = generatePrefixedId("fp", fp.id);
+        // Añadimos aristas de Flow Paths (FP)
+        yamlData.melgen_input.flow_paths.forEach(fp => {
+            const fromControlVolumeId = generatePrefixedId("cv", fp.from_control_volume.id);
+            const toControlVolumeId = generatePrefixedId("cv", fp.to_control_volume.id);
+            const prefixedId = generatePrefixedId("fp", fp.id);
 
-                edges.add({
-                    id: prefixedId,
-                    from: fromControlVolumeId,
-                    to: toControlVolumeId,
-                    label: fp.name,
-                    properties: fp.geometry,
-                    segment_parameters: fp.segment_parameters,
-                    junction_limits: fp.junction_limits,
-                    time_dependent_flow_path: fp.time_dependent_flow_path,
-                    type: 'flow_path'
-                });
+            edges.add({
+                id: prefixedId,
+                from: fromControlVolumeId,
+                to: toControlVolumeId,
+                label: fp.name,
+                properties: fp.geometry,
+                segment_parameters: fp.segment_parameters,
+                junction_limits: fp.junction_limits,
+                time_dependent_flow_path: fp.time_dependent_flow_path,
+                type: 'flow_path'
             });
+        });
 
-            initializeGraph();
-        } catch (e) {
-            alert('Error al leer el archivo YAML: ' + e.message);
-        }
-    };
-
-    reader.readAsText(file);
+        initializeGraph();
+    } catch (e) {
+        alert('Error al leer el YAML recibido: ' + e.message);
+    }
 }
 
 function setupNetworkListeners() {
@@ -266,7 +261,7 @@ function setupNetworkListeners() {
                             alert('La suma de todos los valores de MLFR debe ser exactamente 1.0.');
                             return; // Detener la ejecución si la condición no se cumple
                         }
-
+                        
                         if (mlfrValid && mlfrTotal === 1.0 && !invalidFields) {
                             const parsedProps = {};
                             for (const [key, value] of Object.entries(newProps)) {
@@ -275,8 +270,8 @@ function setupNetworkListeners() {
 
                             const parsedAltitudeVolume = {};
                             for (const [key, value] of Object.entries(newAltitudeVolume)) {
-                                const altitude = parseFloat(key); // Convertimos la clave (altitud) a double
-                                const volume = parseFloat(value); // Convertimos el valor (volumen) a double
+                                const altitude = parseFloat(key); // Convertimos la altitud a double
+                                const volume = parseFloat(value); // Convertimos el volumen a double
                                 parsedAltitudeVolume[altitude] = volume;
                             }
 
@@ -288,9 +283,6 @@ function setupNetworkListeners() {
                                 properties: { ...existingNode.properties, ...parsedProps }, 
                                 altitude_volume: { ...existingNode.altitude_volume, ...parsedAltitudeVolume }
                             });
-                            
-                            console.log("✅ Se ejecutó `network.body.data.nodes.update(...)`. Verificando nodos después de la actualización:");
-                            console.log(JSON.stringify(network.body.data.nodes.get(), null, 2));
                             
                             const controlVolumeId = nodeId.replace(/^\D+/g, ""); // Extraer el ID (sin prefijo 'cv')
                             const controlVolume = yamlData.melgen_input.control_volumes.find(cv => cv.id === controlVolumeId);
@@ -410,9 +402,9 @@ function setupNetworkListeners() {
                                 break;
                             }
                     
-                            // Validar Elemento de Base de Datos: solo debe contener caracteres alfabéticos
-                            if (!/^[a-zA-Z]+$/.test(databaseElement)) {
-                                alert(`El campo "Elemento de Base de Datos" del argumento ${i + 1} solo puede contener caracteres alfabéticos.`);
+                            // Validar Elemento de Base de Datos: debe comenzar por una letra y solo puede contener letras, números, guiones y puntos
+                            if (!/^[a-zA-Z][a-zA-Z0-9\-.]*$/.test(databaseElement)) {
+                                alert(`El campo "Elemento de Base de Datos" del argumento ${i + 1} debe comenzar por una letra y solo puede contener letras, números, guiones y puntos.`);
                                 invalidFields = true;
                                 break;
                             }
@@ -613,7 +605,7 @@ function setupNetworkListeners() {
         }
     });
 }
-
+/*
 downloadButton.addEventListener('click', () => {
     try {
         // Pedir al usuario el nombre del archivo
@@ -645,6 +637,52 @@ downloadButton.addEventListener('click', () => {
         URL.revokeObjectURL(link.href);
     } catch (error) {
         console.error("Error al generar el archivo YAML:", error);
+    }
+});
+*/
+
+downloadButton.addEventListener('click', async () => {
+    try {
+        let fileName = prompt("Introduce el nombre del archivo (sin extensión):", "datos_actualizados");
+        
+        if (!fileName || fileName.trim() === "") {
+            fileName = "datos_actualizados";
+        }
+        
+        fileName = fileName.trim(); // sin extensión, la añadiremos más tarde
+
+        // Convertir yamlData a texto YAML
+        const yamlContent = jsyaml.dump(yamlData);
+
+        // Enviar al servidor para convertir a MELCOR
+        const response = await fetch('/convert-to-melcor', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                fileName: fileName, // sin extensión
+                yamlContent: yamlContent
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Error en la conversión a MELCOR');
+        }
+
+        // Recibir el archivo MELCOR como Blob
+        const melcorBlob = await response.blob();
+
+        // Crear enlace de descarga
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(melcorBlob);
+        link.download = fileName + '.inp'; // nombre final de archivo
+        link.click();
+
+        URL.revokeObjectURL(link.href);
+
+    } catch (error) {
+        console.error("Error al generar o descargar el archivo MELCOR:", error);
     }
 });
 
@@ -992,14 +1030,7 @@ const createEditFormControlFunction = (id, name, properties, updateCallback) => 
 
 const createEditFormControlVolume = (id, name, properties, altitudeVolume, updateCallback) => {
     let formContent = `<h4>Editar propiedades de: ${id} - ${name}</h4>`;
-    let mlfrTotal = 0; // Para verificar la suma de MLFR
-
     for (const [key, value] of Object.entries(properties)) {
-        // Validación de MLFR
-        if (key.startsWith("MLFR")) {
-            mlfrTotal += parseFloat(value);
-        }
-
         formContent += 
             `<div class="property-section">
                 <label>${key}: </label>
@@ -1083,11 +1114,41 @@ const createEditFormFlowPath = (id, name, geometry, segmentParameters, junctionL
 otrosDatosButton.addEventListener("click", openModal);
 
 // Asignar el evento de carga de archivo al input
-document.getElementById('yamlFileInput').addEventListener('change', handleFileUpload);
+document.getElementById('melcorFileInput').addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    console.log("Archivo seleccionado:", file.name);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch('/upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Respuesta del servidor:", data);
+
+        // 🔥 Aquí hacemos el log para ver el YAML recibido
+        console.log("Contenido YAML recibido de Python:", data.yaml);
+
+        if (!data.yaml) {
+            throw new Error("No se recibió el contenido YAML del servidor.");
+        }
+
+        // 🔥 Aquí directamente procesamos el string YAML
+        handleFileUpload(data.yaml);
+    })
+    .catch(error => {
+        console.error('Error al subir o procesar el archivo MELCOR:', error);
+    });
+});
 
 // Hacer que el botón dispare el clic en el input oculto
-document.getElementById('loadYamlBtn').addEventListener('click', function () {
-    document.getElementById('yamlFileInput').click();
+document.getElementById('loadMelcorBtn').addEventListener('click', function () {
+    document.getElementById('melcorFileInput').click();
 });
 
 // Asignar evento al botón de "Nuevo Diagrama"
@@ -1106,7 +1167,7 @@ function createNewDiagram() {
     initializeGraph(); // Inicializar nuevo grafo vacío
 }
 
-// Función para inicializar el grafo con nodos y aristas actuales
+// Función para inicializar el lienzo
 function initializeGraph() {
     setupDragAndDrop();
     const data = { nodes, edges };
@@ -1230,11 +1291,10 @@ function addControlVolume(name, x, y) {
         console.error("Error: network aún no ha sido inicializado.");
         return;
     }
-
     // Obtener el siguiente ID disponible
     const nextIdNumber = yamlData.melgen_input.control_volumes.length + 1;
     const newId = String(nextIdNumber).padStart(3, '0'); // Genera IDs como '001', '002',
-
+    
     const newNode = {
         id: generatePrefixedId("cv", newId),
         label: name,

@@ -6,15 +6,15 @@
   <title>Melcor Visualizer</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
   <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
   <header>
     <h1>Diagramas Melcor</h1>
     <div class="top-bar">
       <button id="newDiagramBtn">Nuevo Diagrama</button>
-      <button id="loadYamlBtn">Cargar YAML</button>
-      <input type="file" id="yamlFileInput" style="display: none;" accept=".yaml" />
+      <button id="loadMelcorBtn">Cargar MELCOR</button>
+      <input type="file" id="melcorFileInput" style="display: none;" accept=".inp" />
       <button id="downloadBtn">Descargar</button>
       <button id="otrosDatosBtn">Otros Datos</button>
       <button id="deleteButton">Eliminar elemento</button>
@@ -95,6 +95,6 @@
     </div>
   </div>
 
-  <script src="prueba.js"></script>
+  <script src="{{ url_for('static', filename='prueba.js') }}"></script>
 </body>
 </html>
