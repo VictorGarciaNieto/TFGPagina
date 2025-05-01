@@ -319,11 +319,14 @@ def convert_to_melcor(yaml_filename, output_filename):
 
         # Propiedades con numeración incremental
         for idx, (key, value) in enumerate(cv.get("properties", {}).items(), start=1):
-            lines.append(f"CV{vol_id}A{idx} {key} {value}")
+            value_str = float(value)
+            lines.append(f"CV{vol_id}A{idx} {key} {value_str}")
 
         # Altitudes del volumen con numeración BX
         for idx, (key, value) in enumerate(cv.get("altitude_volume", {}).items(), start=1):
-            lines.append(f"CV{vol_id}B{idx} {key} {value}")
+            key_str = float(key)
+            value_str1 = float(value)
+            lines.append(f"CV{vol_id}B{idx} {key_str} {value_str1}")
 
     lines.append("************************")
     lines.append("*       FL INPUT       *")
@@ -332,23 +335,44 @@ def convert_to_melcor(yaml_filename, output_filename):
     # Flow Paths
     for fp in melgen.get("flow_paths", []):
         lines.append("**********")
+
+        # Formateo de alturas con punto decimal
+        from_h = f"{float(fp['from_control_volume']['height']):.1f}"
+        to_h = f"{float(fp['to_control_volume']['height']):.1f}"
+
         lines.append(
             f"FL{fp['id']}00 {fp['name']} {fp['from_control_volume']['id']} {fp['to_control_volume']['id']} "
-            f"{fp['from_control_volume']['height']} {fp['to_control_volume']['height']}"
+            f"{from_h} {to_h}"
         )
+
         if fp.get("geometry"):
             g = fp["geometry"]
-            lines.append(f"FL{fp['id']}01 {g['area']} {g['length']} {g.get('fraction_open', '')}")
+            area = f"{float(g['area']):.3f}"
+            length = f"{float(g['length']):.1f}"
+            fraction = f"{float(g['fraction_open']):.1f}" if 'fraction_open' in g and g['fraction_open'] != '' else ''
+            lines.append(f"FL{fp['id']}01 {area} {length} {fraction}")
+
         lines.append(f"FL{fp['id']}02 3")
+
         if fp.get("segment_parameters"):
             s = fp["segment_parameters"]
-            lines.append(f"FL{fp['id']}S0 {s['area']} {s['length']} {s['hydraulic_diameter']}")
+            area = f"{float(s['area']):.3f}"
+            length = f"{float(s['length']):.1f}"
+            hd = f"{float(s['hydraulic_diameter']):.5f}"
+            lines.append(f"FL{fp['id']}S0 {area} {length} {hd}")
+
         if fp.get("junction_limits", {}).get("from_volume"):
             j = fp["junction_limits"]["from_volume"]
-            lines.append(f"FL{fp['id']}0F {j['bottom_opening_elevation']} {j['top_opening_elevation']}")
+            bot = f"{float(j['bottom_opening_elevation']):.1f}"
+            top = f"{float(j['top_opening_elevation']):.1f}"
+            lines.append(f"FL{fp['id']}0F {bot} {top}")
+
         if fp.get("junction_limits", {}).get("to_volume"):
             j = fp["junction_limits"]["to_volume"]
-            lines.append(f"FL{fp['id']}0T {j['bottom_opening_elevation']} {j['top_opening_elevation']}")
+            bot = f"{float(j['bottom_opening_elevation']):.1f}"
+            top = f"{float(j['top_opening_elevation']):.1f}"
+            lines.append(f"FL{fp['id']}0T {bot} {top}")
+
         if fp.get("time_dependent_flow_path"):
             t = fp["time_dependent_flow_path"]
             lines.append(f"FL{fp['id']}T0 {t['type_flag']} {t['function_number']}")
@@ -360,12 +384,21 @@ def convert_to_melcor(yaml_filename, output_filename):
     # Control Functions
     for cf in melgen.get("control_functions", []):
         lines.append("**********")
+
+        # Conversión de valores numéricos con formato decimal uniforme
+        scale = f"{float(cf['scale_factor']):.1f}"
+        additive = f"{float(cf.get('additive_constant', 0.0)):.1f}"
+        # Línea principal con todos los campos
         lines.append(
-            f"CF{cf['id']}00 {cf['name']} {cf['type']} {cf['num_arguments']} {cf['scale_factor']} "
-            f"{cf.get('additive_constant', 0.0)}"
+            f"CF{cf['id']}00 {cf['name']} {cf['type']} {cf['num_arguments']} {scale} {additive}"
         )
+
+        # Argumentos con formato correcto
         for i, arg in enumerate(cf.get("arguments", [])):
-            lines.append(f"CF{cf['id']}{10 + i} {arg['scale_factor']} {arg['additive_constant']} {arg['database_element']}")
+            sf = f"{float(arg['scale_factor']):.1f}"
+            ac = f"{float(arg['additive_constant']):.1f}"
+            lines.append(f"CF{cf['id']}{10 + i} {sf} {ac} {arg['database_element']}")
+
 
     lines.append("************************")
     lines.append("*       EDF INPUT      *")
@@ -391,17 +424,18 @@ def convert_to_melcor(yaml_filename, output_filename):
             file_format = edf["file_format"]
             lines.append(f"{'EDF00102':<10}{file_format}")
         
-        # EDF00110 - write increment control
+        # EDF00110 - write increment control (conversión numérica)
         if "write_increment_control" in edf:
             w = edf["write_increment_control"]
-            time_effective = w.get("time_effective", "")
-            time_increment = w.get("time_increment", "")
+            time_effective = f"{float(w.get('time_effective', 0.0)):.1f}"
+            time_increment = f"{float(w.get('time_increment', 0.0)):.1f}"
             lines.append(f"{'EDF00110':<10}{time_effective:<12}{time_increment}")
         
         # EDF001Ax - channel variables
         channel_vars = edf.get("channel_variables", {})
         for i, (k, v) in enumerate(channel_vars.items(), start=1):
             lines.append(f"{'EDF001A'+str(i):<10}{v}")
+
 
     # Agregar final MELGEN
     lines.append(". * END MELGEN")
@@ -424,13 +458,15 @@ def convert_to_melcor(yaml_filename, output_filename):
     # CPULEFT
     cpu_settings = melcor.get("cpu_settings", {})
     if "cpu_left" in cpu_settings:
-        lines.append(f"{'CPULEFT':<10}{cpu_settings['cpu_left']}")
+        cpu_left = float(cpu_settings["cpu_left"])
+        lines.append(f"{'CPULEFT':<10}{cpu_left:.1f}")
 
     # CPULIM
     if "cpu_lim" in cpu_settings:
-        lines.append(f"{'CPULIM':<10}{cpu_settings['cpu_lim']}")
+        cpu_lim = float(cpu_settings["cpu_lim"])
+        lines.append(f"{'CPULIM':<10}{cpu_lim:.1f}")
 
-    # CYMESF
+    # CYMESF (estos son enteros)
     cymesf = cpu_settings.get("cymesf", [])
     if cymesf:
         cymesf_values = " ".join(str(int(float(v))) for v in cymesf)
@@ -439,20 +475,21 @@ def convert_to_melcor(yaml_filename, output_filename):
     # TEND
     time_settings = melcor.get("time_settings", {})
     if "tend" in time_settings:
-        lines.append(f"{'TEND':<10}{time_settings['tend']}")
+        tend = float(time_settings["tend"])
+        lines.append(f"{'TEND':<10}{tend:.1f}")
 
     # TIME1
     time1 = time_settings.get("time1", {})
     if time1:
         time1_values = [
-            time1.get("time", ""),
-            time1.get("dtmax", ""),
-            time1.get("dtmin", ""),
-            time1.get("dtedt", ""),
-            time1.get("dtplt", ""),
-            time1.get("dtrst", "")
+            float(time1.get("time", 0)),
+            float(time1.get("dtmax", 0)),
+            float(time1.get("dtmin", 0)),
+            float(time1.get("dtedt", 0)),
+            float(time1.get("dtplt", 0)),
+            float(time1.get("dtrst", 0)),
         ]
-        time1_line = " ".join(str(v) for v in time1_values)
+        time1_line = " ".join(f"{v:.1f}" for v in time1_values)
         lines.append(f"{'TIME1':<10}{time1_line}")
 
     # Agregar final MELCOR

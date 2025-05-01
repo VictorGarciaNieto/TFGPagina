@@ -605,41 +605,6 @@ function setupNetworkListeners() {
         }
     });
 }
-/*
-downloadButton.addEventListener('click', () => {
-    try {
-        // Pedir al usuario el nombre del archivo
-        let fileName = prompt("Introduce el nombre del archivo (sin extensión):", "datos_actualizados");
-        
-        // Si el usuario cancela o deja el campo vacío, se usa un nombre predeterminado
-        if (!fileName || fileName.trim() === "") {
-            fileName = "datos_actualizados";
-        }
-
-        // Asegurar que la extensión sea .yaml
-        fileName = fileName.trim() + ".yaml";
-
-        // Convertir yamlData a formato YAML
-        const yamlContent = jsyaml.dump(yamlData);
-
-        // Crear un archivo Blob con el contenido YAML
-        const blob = new Blob([yamlContent], { type: 'application/x-yaml' });
-
-        // Crear un enlace de descarga temporal
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = fileName;  // Usar el nombre ingresado por el usuario
-
-        // Simular clic en el enlace para iniciar la descarga
-        link.click();
-
-        // Limpiar el objeto URL
-        URL.revokeObjectURL(link.href);
-    } catch (error) {
-        console.error("Error al generar el archivo YAML:", error);
-    }
-});
-*/
 
 downloadButton.addEventListener('click', async () => {
     try {
