@@ -228,6 +228,13 @@ function setupNetworkListeners() {
                                     }
                                     
                                 }
+
+                                // Comprobación específica para RHUM
+                                if (key === "RHUM" && (numericValue < 0.0 || numericValue > 1.0)) {
+                                    alert('El valor de RHUM debe estar entre 0.0 y 1.0.');
+                                    invalidFields = true;
+                                    return;
+                                }
         
                                 newProps[key] = value; // Actualizar el valor de la propiedad
                             }
@@ -291,8 +298,7 @@ function setupNetworkListeners() {
                                 // Actualizar únicamente properties y altitude_volume
                                 controlVolume.properties = { ...controlVolume.properties, ...parsedProps };
                                 controlVolume.altitude_volume = { ...parsedAltitudeVolume };
-                                
-                                syncMLFRProperties();
+                            
 
                                 console.log("Control Volume actualizado:", controlVolume);
                                 console.log("yamlData actualizado:", JSON.stringify(yamlData, null, 2));
@@ -312,6 +318,16 @@ function setupNetworkListeners() {
                         network.body.data.nodes.update({ id: nodeId, properties: newProps });
                     });
         
+                    // Mapa con el número de argumentos requeridos por tipo
+                    const argumentCountByType = {
+                        "L-EQUALS": 2, "L-NOT": 1, "L-EQV": 2, "L-EQ": 2, "L-GT": 2, "L-GE": 2, "L-NE": 2,
+                        "L-AND": 2, "L-OR": 2, "L-L-IFTE": 3, "EQUALS": 2, "ABS": 1, "ADD": 2, "DIM": 3,
+                        "MULTIPLY": 2, "DIVIDE": 2, "POWER-I": 2, "POWER-R": 2, "POWER-V": 2, "EXP": 1,
+                        "LN": 1, "LOG": 1, "SQRT": 1, "COS": 1, "SIN": 1, "TAN": 1, "ARCCOS": 1,
+                        "ARCSIN": 1, "ARCTAN": 1, "COSH": 1, "SINH": 1, "TANH": 1, "MAX": 2, "MIN": 2,
+                        "SIGN": 1, "SIGNI": 1, "UNIT-NRM": 1, "TAB-FUN": 1, "L-A-IFTE": 3   
+                    };
+
                     // Generar argumentos dinámicamente
                     const generateArgumentsForm = (numArguments, argumentsList) => {
                         let argumentsForm = '<h5>Editar Argumentos:</h5>';
@@ -347,6 +363,19 @@ function setupNetworkListeners() {
                         }
         
                         generateArgumentsForm(newNumArguments, node.properties.arguments);
+                    });
+
+                    // Cambiar tipo de función → actualizar número de argumentos automáticamente
+                    document.getElementById('edit-type').addEventListener('change', (event) => {
+                        const selectedType = event.target.value;
+                        const requiredArgs = argumentCountByType[selectedType] || 0;
+
+                        // Actualizar input de número de argumentos
+                        const numArgInput = document.getElementById('edit-num-arguments');
+                        numArgInput.value = requiredArgs;
+
+                        // Regenerar formulario de argumentos, manteniendo los existentes
+                        generateArgumentsForm(requiredArgs, node.properties.arguments);
                     });
         
                     // Manejo del evento de guardar
@@ -472,17 +501,31 @@ function setupNetworkListeners() {
                         if (input) {
                             const value = input.value.trim();
                             const numericValue = parseFloat(value);
-        
-                            // Verificación: Comprobar que el valor completo sea numérico y mayor que 0
-                            if (isNaN(numericValue) || value === '' || numericValue <= 0 || value !== String(numericValue)) {
-                                alert(`El valor de ${key} debe ser un número positivo válido.`);
+
+                            if (isNaN(numericValue) || value === '') {
+                                alert(`El valor de ${key} debe ser un número válido.`);
                                 invalidFields = true;
                             } else {
-                                newProps[key] = numericValue;
+                                if (key === "fraction_open") {
+                                    if (numericValue < 0.0 || numericValue > 1.0) {
+                                        alert(`El valor de ${key} debe estar entre 0.0 y 1.0.`);
+                                        invalidFields = true;
+                                    } else {
+                                        newProps[key] = numericValue;
+                                    }
+                                } else {
+                                    // Validación estándar para otros campos: deben ser > 0
+                                    if (numericValue <= 0 || value !== String(numericValue)) {
+                                        alert(`El valor de ${key} debe ser un número positivo válido.`);
+                                        invalidFields = true;
+                                    } else {
+                                        newProps[key] = numericValue;
+                                    }
+                                }
                             }
                         }
                     });
-        
+
                     // Validar y actualizar parámetros del segmento
                     const newSegmentParams = {};
                     Object.keys(edge.segment_parameters || {}).forEach(key => {
@@ -684,16 +727,15 @@ const openModal = () => {
     const saveNCGButton = document.getElementById("saveNCGInput");
     saveNCGButton.addEventListener("click", () => {
         const updatedNCGInputs = [];
-        document.querySelectorAll(".ncg-section").forEach((section, index) => {
-            const id = parseInt(document.getElementById(`ncg-id-${index}`).value, 10);
-            const name = document.getElementById(`ncg-name-${index}`).value;
-            updatedNCGInputs.push({ id, name });
-        });
-
+        document.querySelectorAll(".ncg-section").forEach((section, newIndex) => {
+            const name = section.querySelector(`#ncg-name-${newIndex}`).value;
+            updatedNCGInputs.push({ id: newIndex + 1, name });
+        });        
+    
         // Actualizar los datos del YAML
         yamlData.melgen_input.ncg_input = updatedNCGInputs;
         console.log("Datos NCG guardados:", yamlData.melgen_input.ncg_input);
-
+    
         // Cerrar el modal
         modal.classList.add("hidden");
         modal.style.display = "none";
@@ -705,10 +747,16 @@ const openModal = () => {
             const gasToRemove = yamlData.melgen_input.ncg_input[index];
             const gasIdToRemove = gasToRemove.id;
 
-            // Eliminar el gas correspondiente del YAML
+            // Eliminar el gas del array
             yamlData.melgen_input.ncg_input.splice(index, 1);
             console.log(`Gas con ID ${gasIdToRemove} eliminado.`);
+            // Reasignar IDs consecutivos tras eliminar
+            yamlData.melgen_input.ncg_input = yamlData.melgen_input.ncg_input.map((gas, i) => ({
+                id: i + 1,
+                name: gas.name
+            }));
 
+            // Actualizar volúmenes de control
             syncMLFRProperties();
 
             console.log("Volúmenes de control actualizados tras eliminar gas:", yamlData.melgen_input.control_volumes);
@@ -722,13 +770,19 @@ const openModal = () => {
     const addButton = document.getElementById("add-ncg-btn");
     if (addButton) {
         addButton.addEventListener("click", () => {
-            const selectedGasId = parseInt(document.getElementById("add-ncg-select").value, 10);
-            const selectedGasName = document.getElementById("add-ncg-select").selectedOptions[0].text;
+            const selectedGasName = document.getElementById("add-ncg-select").value;
 
-            // Añadir el nuevo gas al YAML
-            yamlData.melgen_input.ncg_input.push({ id: selectedGasId, name: selectedGasName });
-            console.log(`Gas añadido: { id: ${selectedGasId}, name: ${selectedGasName} }`);
+            // Añadir el nuevo gas al array
+            yamlData.melgen_input.ncg_input.push({ id: 0, name: selectedGasName }); // ID temporal
 
+            // Reasignar todos los IDs para mantener secuencia
+            yamlData.melgen_input.ncg_input.forEach((gas, index) => {
+                gas.id = index + 1;
+            });
+
+            console.log(`Gas añadido: { name: ${selectedGasName} }`);
+
+            // Sincronizar los volúmenes de control con los nuevos gases
             syncMLFRProperties();
 
             console.log("🔄 Estado de `yamlData.melgen_input.control_volumes` después de añadir gas:", JSON.stringify(yamlData.melgen_input.control_volumes, null, 2));
@@ -839,26 +893,24 @@ const updateChannelVariables = (index, channels) => {
 // Función para crear formulario de edición de ncg_input
 const createEditFormNCGInput = (ncgInputs, updateCallback) => {
     const allGases = [
-        { id: 4, name: "N2" },
-        { id: 5, name: "O2" },
-        { id: 6, name: "H2" },
-        { id: 7, name: "HE" },
-        { id: 8, name: "AR" }
+        "N2",
+        "O2",
+        "H2",
+        "HE",
+        "AR"
     ];
 
-    // Filtramos los gases restantes que aún no están en ncgInputs
-    const remainingGases = allGases.filter(
-        gas => !ncgInputs.some(ncg => ncg.id === gas.id)
-    );
+    const usedNames = ncgInputs.map(ncg => ncg.name);
+    const remainingGases = allGases.filter(name => !usedNames.includes(name));
 
     let formContent = `<h4>Editar NCG</h4>`;
 
     // Mostrar los gases actuales con opción de eliminar
     ncgInputs.forEach((ncg, index) => {
         formContent += `
-            <div class="ncg-section">
+            <div class="ncg-section" data-index="${index}">
                 <label>ID: </label>
-                <input type="text" id="ncg-id-${index}" value="${ncg.id}" readonly />
+                <input type="text" id="ncg-id-${index}" value="${index + 1}" readonly />
                 <label>Nombre: </label>
                 <input type="text" id="ncg-name-${index}" value="${ncg.name}" readonly />
                 <button id="delete-ncg-${index}" class="delete-ncg-btn">Eliminar</button>
@@ -873,9 +925,7 @@ const createEditFormNCGInput = (ncgInputs, updateCallback) => {
                 <label>Añadir Gas:</label>
                 <select id="add-ncg-select">
                     ${remainingGases
-                        .map(
-                            gas => `<option value="${gas.id}">${gas.name}</option>`
-                        )
+                        .map(name => `<option value="${name}">${name}</option>`)
                         .join("")}
                 </select>
                 <button id="add-ncg-btn">Añadir</button>
@@ -1445,25 +1495,31 @@ document.getElementById("flowPathBtn").addEventListener("click", () => {
 });
 
 function syncMLFRProperties() {
-    const currentGases = yamlData.melgen_input.ncg_input.map(gas => `MLFR.${gas.id}`);
-    
+    const currentNCGs = yamlData.melgen_input.ncg_input;
+
+    // Construye el nuevo set de MLFR keys con ID correcto
+    const newMLFRKeys = currentNCGs.map(gas => `MLFR.${gas.id}`);
+
     yamlData.melgen_input.control_volumes.forEach(cv => {
         if (!cv.properties) {
-            cv.properties = {};  // Si no tiene propiedades, inicializar objeto vacío
+            cv.properties = {};
         }
 
-        // **1. Añadir nuevas propiedades MLFR si no existen**
-        currentGases.forEach(mlfrKey => {
-            if (!(mlfrKey in cv.properties)) {
-                cv.properties[mlfrKey] = 0.0; // Valor por defecto
+        // Copia actual de propiedades para referencia
+        const oldProps = { ...cv.properties };
+
+        // Eliminar todas las claves MLFR antiguas
+        Object.keys(cv.properties).forEach(key => {
+            if (key.startsWith("MLFR.")) {
+                delete cv.properties[key];
             }
         });
 
-        // **2. Eliminar MLFRs de gases que ya no existen**
-        Object.keys(cv.properties).forEach(key => {
-            if (key.startsWith("MLFR.") && !currentGases.includes(key)) {
-                delete cv.properties[key];
-            }
+        // Reasignar nuevas claves MLFR con valores antiguos si coinciden por nombre
+        currentNCGs.forEach((gas, index) => {
+            const oldEntry = Object.entries(oldProps).find(([k, _]) => k.startsWith("MLFR.") && oldProps[k] !== undefined);
+            const newKey = `MLFR.${gas.id}`;
+            cv.properties[newKey] = oldEntry ? oldEntry[1] : 0.0;
         });
     });
 }
