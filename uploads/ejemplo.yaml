@@ -1,0 +1,141 @@
+title: EJEMPLO
+jobid: ''
+melgen_input:
+  ncg_input:
+  - id: 4
+    name: N2
+  - id: 5
+    name: O2
+  control_volumes:
+  - id: '001'
+    name: VOL_1
+    type: '2'
+    properties:
+      PVOL: 101300.0
+      TATM: 293.0
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.22
+    altitude_volume:
+      '0.0': 0.0
+      '8.0': 2500.0
+  - id: '002'
+    name: VOL_2
+    type: '2'
+    properties:
+      PVOL: 101000.0
+      TATM: 293.0
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.22
+    altitude_volume:
+      '0.0': 0.0
+      '8.0': 2500.0
+  - id: '003'
+    name: VOL_3
+    type: '2'
+    properties:
+      PVOL: 101300.0
+      TATM: 293.0
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.22
+    altitude_volume:
+      '0.0': 0.0
+      '8.0': 2500.0
+  - id: '004'
+    name: VOL_4
+    type: '2'
+    properties:
+      PVOL: 101000.0
+      TATM: 293.0
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.22
+    altitude_volume:
+      '0.0': 0.0
+      '8.0': 2500.0
+  control_functions:
+  - id: '001'
+    name: FL_VEL
+    type: EQUALS
+    sinks: []
+    num_arguments: 1
+    scale_factor: 1.0
+    additive_constant: 0.0
+    arguments:
+    - scale_factor: 0.0
+      additive_constant: 10.0
+      database_element: TIME
+  flow_paths:
+  - id: '001'
+    name: FL_1
+    from_control_volume:
+      id: '001'
+      height: 4.0
+    to_control_volume:
+      id: '002'
+      height: 4.0
+    geometry:
+      area: 0.001
+      length: 1.0
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.001
+      length: 1.0
+      hydraulic_diameter: 0.03568
+    junction_limits: {}
+    time_dependent_flow_path: {}
+  - id: '002'
+    name: FL_2
+    from_control_volume:
+      id: '003'
+      height: 4.0
+    to_control_volume:
+      id: '004'
+      height: 4.0
+    geometry:
+      area: 0.001
+      length: 1.0
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.001
+      length: 1.0
+      hydraulic_diameter: 0.03568
+    junction_limits: {}
+    time_dependent_flow_path:
+      type_flag: 2
+      function_number: 1
+  external_data_files:
+  - name: PRESSURES
+    channels: 4
+    mode: WRITE
+    file_specification:
+      file_name: PRESSURES.DAT
+    file_format: 8E20.12
+    write_increment_control:
+      time_effective: 10.0
+      time_increment: 10.0
+    channel_variables:
+      A1: CVH-P.1
+      A2: CVH-P.2
+      A3: CVH-P.3
+      A4: CVH-P.4
+melcor_input:
+  warning_level: 2
+  cpu_settings:
+    cpu_left: 100.0
+    cpu_lim: 100000.0
+    cymesf:
+    - 100
+    - 100
+  time_settings:
+    tend: 5000.0
+    time1:
+      time: 0.0
+      dtmax: 1.0
+      dtmin: 1.0
+      dtedt: 1.0
+      dtplt: 1.0
+      dtrst: 1.0
+debug: []

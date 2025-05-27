@@ -657,7 +657,7 @@ downloadButton.addEventListener('click', async () => {
             fileName = "datos_actualizados";
         }
         
-        fileName = fileName.trim(); // sin extensión, la añadiremos más tarde
+        fileName = fileName.trim(); 
 
         // Convertir yamlData a texto YAML
         const yamlContent = jsyaml.dump(yamlData);
@@ -684,7 +684,7 @@ downloadButton.addEventListener('click', async () => {
         // Crear enlace de descarga
         const link = document.createElement('a');
         link.href = URL.createObjectURL(melcorBlob);
-        link.download = fileName + '.inp'; // nombre final de archivo
+        link.download = fileName + '.inp';
         link.click();
 
         URL.revokeObjectURL(link.href);
@@ -698,11 +698,9 @@ const openModal = () => {
     modal.classList.remove("hidden");
     modal.style.display = "flex";
 
-    // Generar formularios para NCG Input y External Data Files
     const ncgInputForm = createEditFormNCGInput(yamlData.melgen_input.ncg_input || []);
     const externalDataFilesForm = createEditFormExternalDataFiles(yamlData.melgen_input.external_data_files || []);
 
-    // Renderizar el contenido del modal
     modalContent.innerHTML = `
         <span class="close-btn" id="closeModalBtn">&times;</span>
         <h2>Editar Otros Datos</h2>
@@ -716,7 +714,6 @@ const openModal = () => {
         </div>
     `;
 
-    // Botón para cerrar el modal
     const closeModalButton = document.getElementById("closeModalBtn");
     closeModalButton.addEventListener("click", () => {
         modal.classList.add("hidden");
@@ -727,9 +724,10 @@ const openModal = () => {
     const saveNCGButton = document.getElementById("saveNCGInput");
     saveNCGButton.addEventListener("click", () => {
         const updatedNCGInputs = [];
+        const startingId = 4;
         document.querySelectorAll(".ncg-section").forEach((section, newIndex) => {
             const name = section.querySelector(`#ncg-name-${newIndex}`).value;
-            updatedNCGInputs.push({ id: newIndex + 1, name });
+            updatedNCGInputs.push({ id: startingId + newIndex, name });
         });        
     
         // Actualizar los datos del YAML
@@ -750,9 +748,11 @@ const openModal = () => {
             // Eliminar el gas del array
             yamlData.melgen_input.ncg_input.splice(index, 1);
             console.log(`Gas con ID ${gasIdToRemove} eliminado.`);
+
             // Reasignar IDs consecutivos tras eliminar
+            const startingId = 4;
             yamlData.melgen_input.ncg_input = yamlData.melgen_input.ncg_input.map((gas, i) => ({
-                id: i + 1,
+                id: startingId + i,
                 name: gas.name
             }));
 
@@ -776,8 +776,9 @@ const openModal = () => {
             yamlData.melgen_input.ncg_input.push({ id: 0, name: selectedGasName }); // ID temporal
 
             // Reasignar todos los IDs para mantener secuencia
+            const startingId = 4;
             yamlData.melgen_input.ncg_input.forEach((gas, index) => {
-                gas.id = index + 1;
+                gas.id = startingId + index;
             });
 
             console.log(`Gas añadido: { name: ${selectedGasName} }`);
@@ -910,7 +911,7 @@ const createEditFormNCGInput = (ncgInputs, updateCallback) => {
         formContent += `
             <div class="ncg-section" data-index="${index}">
                 <label>ID: </label>
-                <input type="text" id="ncg-id-${index}" value="${index + 1}" readonly />
+                <input type="text" id="ncg-id-${index}" value="${ncg.id}" readonly />
                 <label>Nombre: </label>
                 <input type="text" id="ncg-name-${index}" value="${ncg.name}" readonly />
                 <button id="delete-ncg-${index}" class="delete-ncg-btn">Eliminar</button>
@@ -1053,7 +1054,6 @@ const createEditFormControlVolume = (id, name, properties, altitudeVolume, updat
             </div>`;
     }
 
-    // Agregar sección para altitude_volume
     formContent += `<h5>Editar Valores Altitud-Volumen:</h5>`;
     for (const [key, value] of Object.entries(altitudeVolume)) {
         formContent += 
@@ -1146,14 +1146,12 @@ document.getElementById('melcorFileInput').addEventListener('change', function (
     .then(data => {
         console.log("Respuesta del servidor:", data);
 
-        // 🔥 Aquí hacemos el log para ver el YAML recibido
         console.log("Contenido YAML recibido de Python:", data.yaml);
 
         if (!data.yaml) {
             throw new Error("No se recibió el contenido YAML del servidor.");
         }
 
-        // 🔥 Aquí directamente procesamos el string YAML
         handleFileUpload(data.yaml);
     })
     .catch(error => {
@@ -1172,7 +1170,7 @@ newDiagramBtn.addEventListener('click', createNewDiagram);
 // Función para crear un nuevo diagrama desde cero
 function createNewDiagram() {
     yamlData = JSON.parse(JSON.stringify(initialYaml)); // Clonar estructura base
-    clearGraph(); // Elimina cualquier nodo y arista previa
+    clearGraph(); 
 
     document.getElementById('propertiesContent').innerHTML = ""; // Limpiar panel de propiedades
 
@@ -1308,7 +1306,7 @@ function addControlVolume(name, x, y) {
     }
     // Obtener el siguiente ID disponible
     const nextIdNumber = yamlData.melgen_input.control_volumes.length + 1;
-    const newId = String(nextIdNumber).padStart(3, '0'); // Genera IDs como '001', '002',
+    const newId = String(nextIdNumber).padStart(3, '0'); 
     
     const newNode = {
         id: generatePrefixedId("cv", newId),

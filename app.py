@@ -267,6 +267,7 @@ def convert_to_yaml(filename):
 
     yaml_filename = os.path.basename(filename).replace('.inp', '.yaml')
     yaml_path = os.path.join(app.config['UPLOAD_FOLDER'], yaml_filename)  
+    
     with open(yaml_path, 'w') as yaml_file:
         yaml.dump(data, yaml_file, default_flow_style=False, sort_keys=False)
 
@@ -308,21 +309,16 @@ def convert_to_melcor(yaml_filename, output_filename):
         lines.append("**********")
         vol_id = cv['id']
 
-        # Línea principal con nombre y tipo
         lines.append(f"CV{vol_id}00 {cv['name']} {cv['type']} 0 1")
 
-        # Línea CV<ID>01 fija
         lines.append(f"CV{vol_id}01 0 0")
 
-        # Línea de inicio para propiedades
         lines.append(f"CV{vol_id}A0 3")
 
-        # Propiedades con numeración incremental
         for idx, (key, value) in enumerate(cv.get("properties", {}).items(), start=1):
             value_str = float(value)
             lines.append(f"CV{vol_id}A{idx} {key} {value_str}")
 
-        # Altitudes del volumen con numeración BX
         for idx, (key, value) in enumerate(cv.get("altitude_volume", {}).items(), start=1):
             key_str = float(key)
             value_str1 = float(value)
@@ -375,7 +371,8 @@ def convert_to_melcor(yaml_filename, output_filename):
 
         if fp.get("time_dependent_flow_path"):
             t = fp["time_dependent_flow_path"]
-            lines.append(f"FL{fp['id']}T0 {t['type_flag']} {t['function_number']}")
+            function_number = str(t["function_number"]).zfill(3)  # Asegura formato 3 dígitos
+            lines.append(f"FL{fp['id']}T0 {t['type_flag']} {function_number}")
 
     lines.append("************************")
     lines.append("*       CF INPUT       *")
@@ -547,7 +544,6 @@ def convert_to_melcor_route():
     with open(yaml_path, 'w') as yaml_file:
         yaml_file.write(yaml_content)
 
-    # Llamar a tu función de conversión
     convert_to_melcor(yaml_path, melcor_path)
 
     # Enviar el archivo MELCOR de vuelta
