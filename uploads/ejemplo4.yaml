@@ -1,0 +1,1441 @@
+title: BRANCH_1
+jobid: ''
+melgen_input:
+  ncg_input:
+  - id: 4
+    name: N2
+  - id: 5
+    name: O2
+  - id: 6
+    name: H2
+  - id: 7
+    name: HE
+  - id: 8
+    name: AR
+  control_volumes:
+  - id: '001'
+    name: R001
+    type: '2'
+    properties:
+      PVOL: 101295.0
+      TATM: 293.15
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.21
+      MLFR.8: 0.01
+    altitude_volume:
+      '0.0': 0.0
+      '8.5': 2496.0
+  - id: '006'
+    name: G1
+    type: '2'
+    properties:
+      PVOL: 101235.0
+      TATM: 293.15
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.21
+      MLFR.8: 0.01
+    altitude_volume:
+      '0.0': 0.0
+      '8.5': 2026.0
+  - id: '011'
+    name: R011
+    type: '2'
+    properties:
+      PVOL: 101235.0
+      TATM: 293.15
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.21
+      MLFR.8: 0.01
+    altitude_volume:
+      '0.0': 0.0
+      '8.5': 2469.0
+  - id: '026'
+    name: G16
+    type: '2'
+    properties:
+      PVOL: 101235.0
+      TATM: 293.15
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.21
+      MLFR.8: 0.01
+    altitude_volume:
+      '0.0': 0.0
+      '8.5': 25928.0
+  - id: 083
+    name: SB4-L0
+    type: '2'
+    properties:
+      PVOL: 101295.0
+      TATM: 293.15
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.21
+      MLFR.8: 0.01
+    altitude_volume:
+      '0.0': 0.0
+      '10.5': 906.67
+  - id: 086
+    name: S02
+    type: '2'
+    properties:
+      PVOL: 101235.0
+      TATM: 293.15
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.21
+      MLFR.8: 0.01
+    altitude_volume:
+      '0.0': 0.0
+      '10.5': 480.0
+  - id: '541'
+    name: CVASL0-1
+    type: '2'
+    properties:
+      PVOL: 101325.0
+      TATM: 287.15
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.21
+      MLFR.8: 0.01
+    altitude_volume:
+      '6.6': 0.0
+      '7.5': 0.331875
+  - id: '542'
+    name: CVASL0-2
+    type: '2'
+    properties:
+      PVOL: 101325.0
+      TATM: 287.15
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.21
+      MLFR.8: 0.01
+    altitude_volume:
+      '6.775': 0.0
+      '7.5': 0.25375
+  - id: '543'
+    name: CVASL0-3
+    type: '2'
+    properties:
+      PVOL: 101325.0
+      TATM: 287.15
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.21
+      MLFR.8: 0.01
+    altitude_volume:
+      '7.1': 0.0
+      '8.5': 0.21
+  - id: '544'
+    name: CVASL0-4
+    type: '2'
+    properties:
+      PVOL: 101325.0
+      TATM: 287.15
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.21
+      MLFR.8: 0.01
+    altitude_volume:
+      '6.875': 0.0
+      '7.5': 0.15625
+  - id: '545'
+    name: CVASL0-5
+    type: '2'
+    properties:
+      PVOL: 101325.0
+      TATM: 287.15
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.21
+      MLFR.8: 0.01
+    altitude_volume:
+      '5.05': 0.0
+      '7.5': 0.6625
+  - id: '546'
+    name: CVASL0-6
+    type: '2'
+    properties:
+      PVOL: 101325.0
+      TATM: 287.15
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.21
+      MLFR.8: 0.01
+    altitude_volume:
+      '6.95': 0.0
+      '7.5': 0.1375
+  - id: '547'
+    name: CVASL0-7
+    type: '2'
+    properties:
+      PVOL: 101325.0
+      TATM: 287.15
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.21
+      MLFR.8: 0.01
+    altitude_volume:
+      '6.95': 0.0
+      '8.5': 0.368125
+  - id: '500'
+    name: AS-1
+    type: '2'
+    properties:
+      PVOL: 101325.0
+      TATM: 287.15
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.21
+      MLFR.8: 0.01
+    altitude_volume:
+      '6.5': 0.0
+      '24.5': 27.91125
+  - id: '575'
+    name: CVASL2-1
+    type: '2'
+    properties:
+      PVOL: 101325.0
+      TATM: 287.15
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.21
+      MLFR.8: 0.01
+    altitude_volume:
+      '23.4': 0.0
+      '24.5': 0.495
+  - id: '602'
+    name: ASB-2
+    type: '2'
+    properties:
+      PVOL: 101325.0
+      TATM: 287.15
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.21
+      MLFR.8: 0.01
+    altitude_volume:
+      '29.6': 0.0
+      '31.5': 280.44
+  - id: '400'
+    name: ENV-IN
+    type: '2'
+    properties:
+      PVOL: 101325.0
+      TATM: 293.15
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.21
+      MLFR.8: 0.01
+    altitude_volume:
+      '0.0': 0.0
+      '50.0': 1000000.0
+  - id: '401'
+    name: ENV-OUT
+    type: '2'
+    properties:
+      PVOL: 101325.0
+      TATM: 293.15
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.21
+      MLFR.8: 0.01
+    altitude_volume:
+      '0.0': 0.0
+      '50.0': 1000000.0
+  - id: '996'
+    name: C1-VOL
+    type: '2'
+    properties:
+      PVOL: 101295.0
+      TATM: 293.15
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.21
+      MLFR.8: 0.01
+    altitude_volume:
+      '0.0': 0.0
+      '50.0': 1000000.0
+  - id: '997'
+    name: C2-VOL
+    type: '2'
+    properties:
+      PVOL: 101235.0
+      TATM: 293.15
+      RHUM: 0.6
+      MLFR.4: 0.78
+      MLFR.5: 0.21
+      MLFR.8: 0.01
+    altitude_volume:
+      '0.0': 0.0
+      '50.0': 1000000.0
+  control_functions:
+  - id: '001'
+    name: VEL-R001-EX
+    type: DIVIDE
+    sinks: []
+    num_arguments: 1
+    scale_factor: 8293.0
+    additive_constant: 0.0
+    arguments:
+    - scale_factor: 0.0
+      additive_constant: 3600.0
+      database_element: TIME
+  - id: '954'
+    name: P-R001
+    type: L-GE
+    sinks: []
+    num_arguments: 2
+    scale_factor: 1.0
+    additive_constant: 0.0
+    arguments:
+    - scale_factor: 0.0
+      additive_constant: 101295.0
+      database_element: TIME
+    - scale_factor: 1.0
+      additive_constant: 0.0
+      database_element: CVH-P.001
+  - id: '006'
+    name: VEL-G1-EX
+    type: DIVIDE
+    sinks: []
+    num_arguments: 1
+    scale_factor: 4605.0
+    additive_constant: 0.0
+    arguments:
+    - scale_factor: 0.0
+      additive_constant: 3600.0
+      database_element: TIME
+  - id: '953'
+    name: P-G1
+    type: L-GE
+    sinks: []
+    num_arguments: 2
+    scale_factor: 1.0
+    additive_constant: 0.0
+    arguments:
+    - scale_factor: 0.0
+      additive_constant: 101235.0
+      database_element: TIME
+    - scale_factor: 1.0
+      additive_constant: 0.0
+      database_element: CVH-P.006
+  - id: '011'
+    name: VEL-R011-EX
+    type: DIVIDE
+    sinks: []
+    num_arguments: 1
+    scale_factor: 2962.0
+    additive_constant: 0.0
+    arguments:
+    - scale_factor: 0.0
+      additive_constant: 3600.0
+      database_element: TIME
+  - id: '952'
+    name: P-R011
+    type: L-GE
+    sinks: []
+    num_arguments: 2
+    scale_factor: 1.0
+    additive_constant: 0.0
+    arguments:
+    - scale_factor: 0.0
+      additive_constant: 101235.0
+      database_element: TIME
+    - scale_factor: 1.0
+      additive_constant: 0.0
+      database_element: CVH-P.011
+  - id: '026'
+    name: VEL-G16-EX
+    type: DIVIDE
+    sinks: []
+    num_arguments: 1
+    scale_factor: 32527.0
+    additive_constant: 0.0
+    arguments:
+    - scale_factor: 0.0
+      additive_constant: 3600.0
+      database_element: TIME
+  - id: '951'
+    name: P-G16
+    type: L-GE
+    sinks: []
+    num_arguments: 2
+    scale_factor: 1.0
+    additive_constant: 0.0
+    arguments:
+    - scale_factor: 0.0
+      additive_constant: 101235.0
+      database_element: TIME
+    - scale_factor: 1.0
+      additive_constant: 0.0
+      database_element: CVH-P.026
+  - id: 083
+    name: VEL-SB4-EX
+    type: DIVIDE
+    sinks: []
+    num_arguments: 1
+    scale_factor: 1210.67
+    additive_constant: 0.0
+    arguments:
+    - scale_factor: 0.0
+      additive_constant: 3600.0
+      database_element: TIME
+  - id: '946'
+    name: P-SB4
+    type: L-GE
+    sinks: []
+    num_arguments: 2
+    scale_factor: 1.0
+    additive_constant: 0.0
+    arguments:
+    - scale_factor: 0.0
+      additive_constant: 101295.0
+      database_element: TIME
+    - scale_factor: 1.0
+      additive_constant: 0.0
+      database_element: CVH-P.083
+  - id: 086
+    name: VEL-S02-EX
+    type: DIVIDE
+    sinks: []
+    num_arguments: 1
+    scale_factor: 1361.33
+    additive_constant: 0.0
+    arguments:
+    - scale_factor: 0.0
+      additive_constant: 3600.0
+      database_element: TIME
+  - id: '947'
+    name: P-S02
+    type: L-GE
+    sinks: []
+    num_arguments: 2
+    scale_factor: 1.0
+    additive_constant: 0.0
+    arguments:
+    - scale_factor: 0.0
+      additive_constant: 101235.0
+      database_element: TIME
+    - scale_factor: 1.0
+      additive_constant: 0.0
+      database_element: CVH-P.086
+  - id: '801'
+    name: VEL
+    type: EQUALS
+    sinks: []
+    num_arguments: 1
+    scale_factor: 1.0
+    additive_constant: 0.0
+    arguments:
+    - scale_factor: 1.0
+      additive_constant: 0.0
+      database_element: CFVALU.802
+  - id: '802'
+    name: CONTROLLER
+    type: MULTIPLY
+    sinks: []
+    num_arguments: 2
+    scale_factor: 1.0
+    additive_constant: 0.0
+    arguments:
+    - scale_factor: 1.0
+      additive_constant: 0.0
+      database_element: CFVALU.803
+    - scale_factor: 1.0
+      additive_constant: 0.0
+      database_element: CFVALU.804
+  - id: '803'
+    name: FOO-CF-1
+    type: EQUALS
+    sinks: []
+    num_arguments: 1
+    scale_factor: 1.0
+    additive_constant: 0.0
+    arguments:
+    - scale_factor: 0.0
+      additive_constant: 1.0
+      database_element: TIME
+  - id: '804'
+    name: FOO-CF-2
+    type: EQUALS
+    sinks: []
+    num_arguments: 1
+    scale_factor: 1.0
+    additive_constant: 0.0
+    arguments:
+    - scale_factor: 0.0
+      additive_constant: 1.0
+      database_element: TIME
+  flow_paths:
+  - id: '001'
+    name: HVAC-R001-EX
+    from_control_volume:
+      id: '001'
+      height: 4.25
+    to_control_volume:
+      id: '401'
+      height: 4.25
+    geometry:
+      area: 1.0
+      length: 1.0
+      fraction_open: 1.0
+    segment_parameters:
+      area: 1.0
+      length: 1.0
+      hydraulic_diameter: 1.0
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 3.75
+        top_opening_elevation: 4.75
+      to_volume:
+        bottom_opening_elevation: 3.75
+        top_opening_elevation: 4.75
+    time_dependent_flow_path:
+      type_flag: 2
+      function_number: 1
+  - id: '006'
+    name: HVAC-G1-EX
+    from_control_volume:
+      id: '006'
+      height: 4.25
+    to_control_volume:
+      id: '401'
+      height: 4.25
+    geometry:
+      area: 1.0
+      length: 1.0
+      fraction_open: 1.0
+    segment_parameters:
+      area: 1.0
+      length: 1.0
+      hydraulic_diameter: 1.0
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 3.75
+        top_opening_elevation: 4.75
+      to_volume:
+        bottom_opening_elevation: 3.75
+        top_opening_elevation: 4.75
+    time_dependent_flow_path:
+      type_flag: 2
+      function_number: 6
+  - id: '011'
+    name: HVAC-R011-EX
+    from_control_volume:
+      id: '011'
+      height: 4.25
+    to_control_volume:
+      id: '401'
+      height: 4.25
+    geometry:
+      area: 1.0
+      length: 1.0
+      fraction_open: 1.0
+    segment_parameters:
+      area: 1.0
+      length: 1.0
+      hydraulic_diameter: 1.0
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 3.75
+        top_opening_elevation: 4.75
+      to_volume:
+        bottom_opening_elevation: 3.75
+        top_opening_elevation: 4.75
+    time_dependent_flow_path:
+      type_flag: 2
+      function_number: 11
+  - id: '026'
+    name: HVAC-G16-EX
+    from_control_volume:
+      id: '026'
+      height: 4.25
+    to_control_volume:
+      id: '401'
+      height: 4.25
+    geometry:
+      area: 1.0
+      length: 1.0
+      fraction_open: 1.0
+    segment_parameters:
+      area: 1.0
+      length: 1.0
+      hydraulic_diameter: 1.0
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 3.75
+        top_opening_elevation: 4.75
+      to_volume:
+        bottom_opening_elevation: 3.75
+        top_opening_elevation: 4.75
+    time_dependent_flow_path:
+      type_flag: 2
+      function_number: 26
+  - id: 083
+    name: HVAC-SB4-EX
+    from_control_volume:
+      id: 083
+      height: 3.9375
+    to_control_volume:
+      id: '401'
+      height: 3.9375
+    geometry:
+      area: 1.0
+      length: 1.0
+      fraction_open: 1.0
+    segment_parameters:
+      area: 1.0
+      length: 1.0
+      hydraulic_diameter: 1.0
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 3.8125
+        top_opening_elevation: 4.0625
+      to_volume:
+        bottom_opening_elevation: 3.8125
+        top_opening_elevation: 4.0625
+    time_dependent_flow_path:
+      type_flag: 2
+      function_number: 83
+  - id: 086
+    name: HVAC-S02-EX
+    from_control_volume:
+      id: 086
+      height: 3.9375
+    to_control_volume:
+      id: '401'
+      height: 3.9375
+    geometry:
+      area: 1.0
+      length: 1.0
+      fraction_open: 1.0
+    segment_parameters:
+      area: 1.0
+      length: 1.0
+      hydraulic_diameter: 1.0
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 3.8125
+        top_opening_elevation: 4.0625
+      to_volume:
+        bottom_opening_elevation: 3.8125
+        top_opening_elevation: 4.0625
+    time_dependent_flow_path:
+      type_flag: 2
+      function_number: 86
+  - id: '005'
+    name: HVAC-S513
+    from_control_volume:
+      id: '500'
+      height: 7.05
+    to_control_volume:
+      id: '541'
+      height: 7.05
+    geometry:
+      area: 1.3275
+      length: 8.0
+      fraction_open: 1.0
+    segment_parameters:
+      area: 1.3275
+      length: 8.0
+      hydraulic_diameter: 1.118
+    junction_limits: {}
+    time_dependent_flow_path:
+      type_flag: 2
+      function_number: 801
+  - id: 028
+    name: HVAC-S515-1
+    from_control_volume:
+      id: '541'
+      height: 7.1375
+    to_control_volume:
+      id: '542'
+      height: 7.1375
+    geometry:
+      area: 1.015
+      length: 7.5
+      fraction_open: 1.0
+    segment_parameters:
+      area: 1.015
+      length: 7.5
+      hydraulic_diameter: 0.955
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 6.775
+        top_opening_elevation: 7.5
+      to_volume:
+        bottom_opening_elevation: 6.775
+        top_opening_elevation: 7.5
+    time_dependent_flow_path: {}
+  - id: '035'
+    name: HVAC-S514
+    from_control_volume:
+      id: '542'
+      height: 7.1625
+    to_control_volume:
+      id: '026'
+      height: 7.1625
+    geometry:
+      area: 0.8775
+      length: 13.0
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.8775
+      length: 13.0
+      hydraulic_diameter: 0.889
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 6.825
+        top_opening_elevation: 7.5
+      to_volume:
+        bottom_opening_elevation: 6.825
+        top_opening_elevation: 7.5
+    time_dependent_flow_path: {}
+  - id: '036'
+    name: HVAC-S515-2
+    from_control_volume:
+      id: '542'
+      height: 7.3
+    to_control_volume:
+      id: '543'
+      height: 7.3
+    geometry:
+      area: 0.24
+      length: 11.2
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.24
+      length: 11.2
+      hydraulic_diameter: 0.48
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 7.1
+        top_opening_elevation: 7.5
+      to_volume:
+        bottom_opening_elevation: 7.1
+        top_opening_elevation: 7.5
+    time_dependent_flow_path: {}
+  - id: 091
+    name: HVAC-S516
+    from_control_volume:
+      id: '543'
+      height: 8.375
+    to_control_volume:
+      id: '026'
+      height: 8.375
+    geometry:
+      area: 0.08125
+      length: 3.5
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.08125
+      length: 3.5
+      hydraulic_diameter: 0.283
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 8.25
+        top_opening_elevation: 8.5
+      to_volume:
+        bottom_opening_elevation: 8.25
+        top_opening_elevation: 8.5
+    time_dependent_flow_path: {}
+  - id: 092
+    name: HVAC-S517
+    from_control_volume:
+      id: '543'
+      height: 8.425
+    to_control_volume:
+      id: 086
+      height: 8.425
+    geometry:
+      area: 0.045
+      length: 10.5
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.045
+      length: 10.5
+      hydraulic_diameter: 0.2
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 8.35
+        top_opening_elevation: 8.5
+      to_volume:
+        bottom_opening_elevation: 8.35
+        top_opening_elevation: 8.5
+    time_dependent_flow_path: {}
+  - id: 094
+    name: HVAC-S518
+    from_control_volume:
+      id: '543'
+      height: 8.325
+    to_control_volume:
+      id: 083
+      height: 8.325
+    geometry:
+      area: 0.175
+      length: 6.0
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.175
+      length: 6.0
+      hydraulic_diameter: 0.412
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 8.15
+        top_opening_elevation: 8.5
+      to_volume:
+        bottom_opening_elevation: 8.15
+        top_opening_elevation: 8.5
+    time_dependent_flow_path: {}
+  - id: 095
+    name: HVAC-S911-1
+    from_control_volume:
+      id: '541'
+      height: 7.1875
+    to_control_volume:
+      id: '544'
+      height: 7.1875
+    geometry:
+      area: 0.625
+      length: 69.0
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.625
+      length: 69.0
+      hydraulic_diameter: 0.769
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 6.875
+        top_opening_elevation: 7.5
+      to_volume:
+        bottom_opening_elevation: 6.875
+        top_opening_elevation: 7.5
+    time_dependent_flow_path: {}
+  - id: '218'
+    name: HVAC-S502
+    from_control_volume:
+      id: '575'
+      height: 23.95
+    to_control_volume:
+      id: '500'
+      height: 23.95
+    geometry:
+      area: 1.98
+      length: 17.5
+      fraction_open: 1.0
+    segment_parameters:
+      area: 1.98
+      length: 17.5
+      hydraulic_diameter: 0.18
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 23.4
+        top_opening_elevation: 24.5
+      to_volume:
+        bottom_opening_elevation: 23.4
+        top_opening_elevation: 24.5
+    time_dependent_flow_path: {}
+  - id: '341'
+    name: HVAC-ASB2-IN
+    from_control_volume:
+      id: '400'
+      height: 30.55
+    to_control_volume:
+      id: '602'
+      height: 30.55
+    geometry:
+      area: 2.0
+      length: 1.0
+      fraction_open: 1.0
+    segment_parameters:
+      area: 2.0
+      length: 1.0
+      hydraulic_diameter: 1.949
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 29.6
+        top_opening_elevation: 31.5
+      to_volume:
+        bottom_opening_elevation: 29.6
+        top_opening_elevation: 31.5
+    time_dependent_flow_path: {}
+  - id: '347'
+    name: HVAC-S501
+    from_control_volume:
+      id: '602'
+      height: 30.85
+    to_control_volume:
+      id: '575'
+      height: 23.95
+    geometry:
+      area: 1.1
+      length: 39.5
+      fraction_open: 1.0
+    segment_parameters:
+      area: 1.1
+      length: 1.5
+      hydraulic_diameter: 1.048
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 30.2
+        top_opening_elevation: 31.5
+      to_volume:
+        bottom_opening_elevation: 23.4
+        top_opening_elevation: 24.5
+    time_dependent_flow_path: {}
+  - id: '601'
+    name: HVAC-S911-2
+    from_control_volume:
+      id: '544'
+      height: 7.3375
+    to_control_volume:
+      id: '011'
+      height: 7.3375
+    geometry:
+      area: 0.14625
+      length: 11.4
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.14625
+      length: 11.4
+      hydraulic_diameter: 0.377
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 7.175
+        top_opening_elevation: 7.5
+      to_volume:
+        bottom_opening_elevation: 7.175
+        top_opening_elevation: 7.5
+    time_dependent_flow_path: {}
+  - id: '602'
+    name: HVAC-S911-1
+    from_control_volume:
+      id: '544'
+      height: 7.2125
+    to_control_volume:
+      id: '545'
+      height: 7.2125
+    geometry:
+      area: 0.575
+      length: 18.7
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.575
+      length: 18.7
+      hydraulic_diameter: 0.73
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 6.925
+        top_opening_elevation: 7.5
+      to_volume:
+        bottom_opening_elevation: 6.925
+        top_opening_elevation: 7.5
+    time_dependent_flow_path: {}
+  - id: '605'
+    name: HVAC-S910
+    from_control_volume:
+      id: '545'
+      height: 5.125
+    to_control_volume:
+      id: '006'
+      height: 5.125
+    geometry:
+      area: 0.0375
+      length: 8.6
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.0375
+      length: 8.6
+      hydraulic_diameter: 0.188
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 5.05
+        top_opening_elevation: 5.2
+      to_volume:
+        bottom_opening_elevation: 5.05
+        top_opening_elevation: 5.2
+    time_dependent_flow_path: {}
+  - id: '606'
+    name: HVAC-S909
+    from_control_volume:
+      id: '545'
+      height: 7.225
+    to_control_volume:
+      id: '546'
+      height: 7.225
+    geometry:
+      area: 0.55
+      length: 5.2
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.55
+      length: 5.2
+      hydraulic_diameter: 0.71
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 6.95
+        top_opening_elevation: 7.5
+      to_volume:
+        bottom_opening_elevation: 6.95
+        top_opening_elevation: 7.5
+    time_dependent_flow_path: {}
+  - id: '607'
+    name: HVAC-S908
+    from_control_volume:
+      id: '546'
+      height: 7.3625
+    to_control_volume:
+      id: '006'
+      height: 7.3625
+    geometry:
+      area: 0.1375
+      length: 4.0
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.1375
+      length: 4.0
+      hydraulic_diameter: 0.355
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 7.225
+        top_opening_elevation: 7.5
+      to_volume:
+        bottom_opening_elevation: 7.225
+        top_opening_elevation: 7.5
+    time_dependent_flow_path: {}
+  - id: '610'
+    name: HVAC-S907
+    from_control_volume:
+      id: '546'
+      height: 7.225
+    to_control_volume:
+      id: '547'
+      height: 7.225
+    geometry:
+      area: 0.5225
+      length: 11.0
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.5225
+      length: 11.0
+      hydraulic_diameter: 0.697
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 6.95
+        top_opening_elevation: 7.5
+      to_volume:
+        bottom_opening_elevation: 6.95
+        top_opening_elevation: 7.5
+    time_dependent_flow_path: {}
+  - id: '611'
+    name: HVAC-S904
+    from_control_volume:
+      id: '547'
+      height: 8.4
+    to_control_volume:
+      id: '006'
+      height: 8.4
+    geometry:
+      area: 0.1425
+      length: 5.352
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.1425
+      length: 5.352
+      hydraulic_diameter: 0.527
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 8.3
+        top_opening_elevation: 8.5
+      to_volume:
+        bottom_opening_elevation: 8.3
+        top_opening_elevation: 8.5
+    time_dependent_flow_path: {}
+  - id: '614'
+    name: HVAC-S906
+    from_control_volume:
+      id: '547'
+      height: 8.1625
+    to_control_volume:
+      id: '001'
+      height: 8.1625
+    geometry:
+      area: 0.45125
+      length: 5.4
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.45125
+      length: 5.4
+      hydraulic_diameter: 0.633
+    junction_limits:
+      from_volume:
+        bottom_opening_elevation: 8.025
+        top_opening_elevation: 8.5
+      to_volume:
+        bottom_opening_elevation: 8.025
+        top_opening_elevation: 8.5
+    time_dependent_flow_path: {}
+  - id: '502'
+    name: P-R001-C2
+    from_control_volume:
+      id: '997'
+      height: 4.25
+    to_control_volume:
+      id: '001'
+      height: 4.25
+    geometry:
+      area: 0.016551
+      length: 0.5
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.016551
+      length: 0.5
+      hydraulic_diameter: 0.14517
+    junction_limits: {}
+    time_dependent_flow_path: {}
+  - id: '600'
+    name: D-OUT-SB4
+    from_control_volume:
+      id: '400'
+      height: 3.9375
+    to_control_volume:
+      id: 083
+      height: 3.9375
+    geometry:
+      area: 0.05414
+      length: 0.67
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.05414
+      length: 0.67
+      hydraulic_diameter: 0.2626
+    junction_limits: {}
+    time_dependent_flow_path: {}
+  - id: '603'
+    name: D-SB4-S02
+    from_control_volume:
+      id: 083
+      height: 3.9375
+    to_control_volume:
+      id: 086
+      height: 3.9375
+    geometry:
+      area: 0.031127
+      length: 0.25
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.031127
+      length: 0.25
+      hydraulic_diameter: 0.1991
+    junction_limits: {}
+    time_dependent_flow_path: {}
+  - id: '604'
+    name: D-G16-S02
+    from_control_volume:
+      id: '026'
+      height: 4.25
+    to_control_volume:
+      id: 086
+      height: 4.25
+    geometry:
+      area: 0.00645
+      length: 0.25
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.00645
+      length: 0.25
+      hydraulic_diameter: 0.0906
+    junction_limits: {}
+    time_dependent_flow_path: {}
+  - id: '608'
+    name: D-OUT-S02
+    from_control_volume:
+      id: '400'
+      height: 3.9375
+    to_control_volume:
+      id: 086
+      height: 3.9375
+    geometry:
+      area: 0.049433
+      length: 0.67
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.049433
+      length: 0.67
+      hydraulic_diameter: 0.2509
+    junction_limits: {}
+    time_dependent_flow_path: {}
+  - id: '609'
+    name: D-SB4-G16
+    from_control_volume:
+      id: 083
+      height: 4.25
+    to_control_volume:
+      id: '026'
+      height: 4.25
+    geometry:
+      area: 0.021712
+      length: 0.25
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.021712
+      length: 0.25
+      hydraulic_diameter: 0.1663
+    junction_limits: {}
+    time_dependent_flow_path: {}
+  - id: '613'
+    name: P-G16-C2
+    from_control_volume:
+      id: '026'
+      height: 8.5
+    to_control_volume:
+      id: '997'
+      height: 9.0
+    geometry:
+      area: 36.26153
+      length: 0.500399806
+      fraction_open: 1.0
+    segment_parameters:
+      area: 36.26153
+      length: 0.500399806
+      hydraulic_diameter: 6.7948
+    junction_limits: {}
+    time_dependent_flow_path: {}
+  - id: '616'
+    name: D-G1-G4
+    from_control_volume:
+      id: '006'
+      height: 4.25
+    to_control_volume:
+      id: '997'
+      height: 4.25
+    geometry:
+      area: 0.023773
+      length: 0.5
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.023773
+      length: 0.5
+      hydraulic_diameter: 0.174
+    junction_limits: {}
+    time_dependent_flow_path: {}
+  - id: '620'
+    name: D-G1-R001
+    from_control_volume:
+      id: '006'
+      height: 4.25
+    to_control_volume:
+      id: '001'
+      height: 4.25
+    geometry:
+      area: 0.017312
+      length: 0.5
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.017312
+      length: 0.5
+      hydraulic_diameter: 0.1485
+    junction_limits: {}
+    time_dependent_flow_path: {}
+  - id: '621'
+    name: D-OUT-R001
+    from_control_volume:
+      id: '400'
+      height: 4.25
+    to_control_volume:
+      id: '001'
+      height: 4.25
+    geometry:
+      area: 0.073125
+      length: 0.67
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.073125
+      length: 0.67
+      hydraulic_diameter: 0.3051
+    junction_limits: {}
+    time_dependent_flow_path: {}
+  - id: '660'
+    name: W-OUT-G16
+    from_control_volume:
+      id: '400'
+      height: 4.25
+    to_control_volume:
+      id: '026'
+      height: 4.25
+    geometry:
+      area: 0.12541
+      length: 0.67
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.12541
+      length: 0.67
+      hydraulic_diameter: 0.3996
+    junction_limits: {}
+    time_dependent_flow_path: {}
+  - id: '661'
+    name: W-OUT-R011
+    from_control_volume:
+      id: '400'
+      height: 4.25
+    to_control_volume:
+      id: '011'
+      height: 4.25
+    geometry:
+      area: 0.010838
+      length: 0.67
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.010838
+      length: 0.67
+      hydraulic_diameter: 0.1175
+    junction_limits: {}
+    time_dependent_flow_path: {}
+  - id: '671'
+    name: W-OUT-G1
+    from_control_volume:
+      id: '400'
+      height: 4.25
+    to_control_volume:
+      id: '006'
+      height: 4.25
+    geometry:
+      area: 0.03089
+      length: 0.67
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.03089
+      length: 0.67
+      hydraulic_diameter: 0.1983
+    junction_limits: {}
+    time_dependent_flow_path: {}
+  - id: '673'
+    name: W-G16-R011
+    from_control_volume:
+      id: '026'
+      height: 4.25
+    to_control_volume:
+      id: '011'
+      height: 4.25
+    geometry:
+      area: 0.0267
+      length: 0.25
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.0267
+      length: 0.25
+      hydraulic_diameter: 0.1844
+    junction_limits: {}
+    time_dependent_flow_path: {}
+  - id: '674'
+    name: W-G16-G1
+    from_control_volume:
+      id: '026'
+      height: 4.25
+    to_control_volume:
+      id: '006'
+      height: 4.25
+    geometry:
+      area: 0.009043
+      length: 0.5
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.009043
+      length: 0.5
+      hydraulic_diameter: 0.1073
+    junction_limits: {}
+    time_dependent_flow_path: {}
+  - id: '675'
+    name: P-R011-C2
+    from_control_volume:
+      id: '011'
+      height: 4.25
+    to_control_volume:
+      id: '997'
+      height: 4.25
+    geometry:
+      area: 0.046699
+      length: 3.4e-07
+      fraction_open: 1.0
+    segment_parameters:
+      area: 0.046699
+      length: 3.4e-07
+      hydraulic_diameter: 0.2438
+    junction_limits: {}
+    time_dependent_flow_path: {}
+  - id: '900'
+    name: SB4L0-SB4L1
+    from_control_volume:
+      id: 083
+      height: 4.25
+    to_control_volume:
+      id: '996'
+      height: 4.25
+    geometry:
+      area: 78.2
+      length: 0.5
+      fraction_open: 1.0
+    segment_parameters:
+      area: 78.2
+      length: 0.5
+      hydraulic_diameter: 8.84
+    junction_limits: {}
+    time_dependent_flow_path: {}
+  - id: '901'
+    name: S02L0-S02L1
+    from_control_volume:
+      id: 086
+      height: 4.25
+    to_control_volume:
+      id: '997'
+      height: 4.25
+    geometry:
+      area: 32.6
+      length: 0.5
+      fraction_open: 1.0
+    segment_parameters:
+      area: 32.6
+      length: 0.5
+      hydraulic_diameter: 5.7096
+    junction_limits: {}
+    time_dependent_flow_path: {}
+  external_data_files:
+  - name: PRESSURES
+    channels: 6
+    mode: WRITE
+    file_specification:
+      file_name: PRESSURES.DAT
+    file_format: 8E20.12
+    write_increment_control:
+      time_effective: 1.0
+      time_increment: 10.0
+    channel_variables:
+      A0: CVH-P.1
+      A1: CVH-P.6
+      A2: CVH-P.11
+      A3: CVH-P.26
+      A4: CVH-P.83
+      A5: CVH-P.86
+melcor_input:
+  warning_level: 0
+  cpu_settings:
+    cpu_left: 100.0
+    cpu_lim: 100000.0
+    cymesf:
+    - 100000
+    - 100000
+  time_settings:
+    tend: 5000000.0
+    time1:
+      time: 0.0
+      dtmax: 1.0
+      dtmin: 1.0
+      dtedt: 10.0
+      dtplt: 1000.0
+      dtrst: 10.0
+debug: []

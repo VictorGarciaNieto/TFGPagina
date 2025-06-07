@@ -628,7 +628,7 @@ function setupNetworkListeners() {
 
             if (!nodeId){
                 selectingFlowPath = false
-                return; // No se hizo click en un nodo
+                return; 
             }
 
             const node = nodes.get(nodeId);
@@ -642,7 +642,7 @@ function setupNetworkListeners() {
             }            
 
             if (selectedNodes.length === 2) {
-                selectingFlowPath = false; // Se completó la selección
+                selectingFlowPath = false; 
                 openModalToAddEdge(selectedNodes[0], selectedNodes[1]);
             }
         }

@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "venv/bin/python",  // o la ruta a tu virtualenv
+    "python.pythonPath": "venv/bin/python",
   "python.linting.enabled": true,
   "python.linting.flake8Enabled": true,
   "python.formatting.provider": "black",
