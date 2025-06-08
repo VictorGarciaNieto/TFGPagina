@@ -621,7 +621,6 @@ function setupNetworkListeners() {
             }
         }
         else{
-            // Accedemos a los nodos del evento
             const nodeId = event.nodes[0];
 
             if (!nodeId){
@@ -1276,7 +1275,6 @@ function openModalToAddEdge(fromNodeId, toNodeId) {
         </div>
     `;
     document.body.appendChild(modalf);
-    centerModal(modalf);
 
     modalf.querySelector(".close-btn").addEventListener("click", () => {
         modalf.remove();
