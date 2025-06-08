@@ -1,3 +1,19 @@
+:root {
+  --primary-color: #00416a;
+  --secondary-color: #1e3a8a;
+  --accent-button: #007BFF;
+  --accent-button-hover: #0056b3;
+  --bg-panel: #ffffff;
+  --success-color: #28a745;
+  --success-hover: #1e7e34;
+  --gray-dark: #333;
+  --gray-medium: #888;
+  --gray-light: #ccc;
+  --gray-bg: #f8f9fa;
+  --scroll-thumb: #888;
+  --scroll-thumb-hover: #555;
+  --scroll-track: #f1f1f1;
+}
 
 * {
   margin: 0;
@@ -8,12 +24,12 @@
 
 body {
   background-color: #f4f7fa;
-  color: #333;
+  color: var(--gray-dark);
   line-height: 1.6;
 }
 
 header {
-  background: linear-gradient(90deg, #00416a, #e4e5e6);
+  background: linear-gradient(90deg, var(--primary-color), #e4e5e6);
   color: white;
   padding: 20px;
   text-align: center;
@@ -33,7 +49,7 @@ header h1 {
 }
 
 .top-bar button {
-  background-color: #007BFF;
+  background-color: var(--accent-button);
   color: white;
   border: none;
   padding: 10px 15px;
@@ -43,7 +59,7 @@ header h1 {
 }
 
 .top-bar button:hover {
-  background-color: #0056b3;
+  background-color: var(--accent-button-hover);
 }
 
 #container {
@@ -55,7 +71,7 @@ header h1 {
 
 #leftPanel, #rightPanel {
   width: 250px;
-  background-color: #fff;
+  background-color: var(--bg-panel);
   border-radius: 10px;
   padding: 15px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
@@ -64,7 +80,7 @@ header h1 {
 
 #network {
   flex: 1;
-  background-color: white;
+  background-color: var(--bg-panel);
   border-radius: 10px;
   border: 2px solid #ddd;
   box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
@@ -80,14 +96,14 @@ header h1 {
   padding: 10px;
   text-align: center;
   background-color: #cfe2ff;
-  border: 1px solid #007bff;
+  border: 1px solid var(--accent-button);
   border-radius: 6px;
   font-weight: bold;
 }
 
 .flow-path-button {
   padding: 10px;
-  background-color: #28a745;
+  background-color: var(--success-color);
   color: white;
   border: none;
   border-radius: 5px;
@@ -97,7 +113,7 @@ header h1 {
 }
 
 .flow-path-button:hover {
-  background-color: #1e7e34;
+  background-color: var(--success-hover);
 }
 
 #legend {
@@ -118,21 +134,21 @@ header h1 {
 }
 
 .properties-panel {
-  background-color: #f8f9fa;
+  background-color: var(--gray-bg);
   border: 1px solid #dee2e6;
   border-radius: 8px;
   padding: 15px;
 }
 
 .panel-header h3 {
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--gray-light);
   padding-bottom: 5px;
   margin-bottom: 10px;
-  color: #00416a;
+  color: var(--primary-color);
 }
 
 footer {
-  background-color: #00416a;
+  background-color: var(--primary-color);
   color: white;
   text-align: center;
   padding: 15px;
@@ -156,7 +172,7 @@ footer {
 }
 
 .modal-content {
-  background: #fff;
+  background: var(--bg-panel);
   padding: 20px;
   border-radius: 10px;
   width: 400px;
@@ -171,7 +187,7 @@ footer {
   float: right;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #888;
+  color: var(--gray-medium);
 }
 
 .close-btn:hover {
@@ -185,105 +201,156 @@ footer {
 
 #leftPanel::-webkit-scrollbar-track,
 #rightPanel::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--scroll-track);
 }
 
 #leftPanel::-webkit-scrollbar-thumb,
 #rightPanel::-webkit-scrollbar-thumb {
-  background: #888;
+  background: var(--scroll-thumb);
   border-radius: 4px;
 }
 
 #leftPanel::-webkit-scrollbar-thumb:hover,
 #rightPanel::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: var(--scroll-thumb-hover);
 }
 
-.modal {
+#otrosDatosModal.modal {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 100vw;
+  height: 100vh;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-}
-
-.modal.hidden {
+  z-index: 1000;
+  overflow-y: auto; /* permite scroll general */
   display: none;
 }
 
-.modal-content {
-  background-color: #ffffff;
+#otrosDatosModal .modal-content {
+  background-color: var(--bg-panel);
   padding: 2rem;
-  border-radius: 16px;
-  max-width: 600px;
-  width: 90%;
+  border-radius: 10px;
+  max-width: 900px;
+  width: 80%;
+  max-height: 90vh; /* evita que sobresalga */
+  overflow-y: auto; /* scroll interno si hay muchos gases */
+  margin: 5vh auto; /* pequeño margen arriba/abajo en lugar de fijo 50px */
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   position: relative;
   animation: fadeIn 0.3s ease-in-out;
 }
 
-.modal-content h2 {
+
+
+#otrosDatosModal h2 {
   margin-top: 0;
-  color: #2c3e50;
-  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+  font-size: 2rem;
   border-bottom: 2px solid #e0e0e0;
   padding-bottom: 0.5rem;
 }
 
-.modal-content p {
-  font-size: 1rem;
-  color: #444;
-  margin-top: 1rem;
+#otrosDatosModal h3 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--secondary-color);
+  font-size: 1.5rem;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 0.3rem;
 }
 
-.close-btn {
+#otrosDatosModal h4 {
+  margin: 1rem 0 0.5rem;
+  font-size: 1.3rem;
+  color: var(--primary-color);
+}
+
+#otrosDatosModal .ncg-section,
+#otrosDatosModal .add-ncg-section {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#otrosDatosModal label {
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+#otrosDatosModal input[type="text"],
+#otrosDatosModal select {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+#otrosDatosModal .delete-ncg-btn,
+#otrosDatosModal #add-ncg-btn,
+#otrosDatosModal #saveNCGInput,
+#otrosDatosModal #cancelEditNCGInput {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+#otrosDatosModal .delete-ncg-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+#otrosDatosModal .delete-ncg-btn:hover {
+  background-color: #c82333;
+}
+
+#otrosDatosModal #add-ncg-btn {
+  background-color: #17a2b8;
+  color: white;
+}
+
+#otrosDatosModal #add-ncg-btn:hover {
+  background-color: #138496;
+}
+
+#otrosDatosModal #saveNCGInput {
+  background-color: var(--accent-button);
+  color: white;
+  margin-right: 10px;
+}
+
+#otrosDatosModal #saveNCGInput:hover {
+  background-color: var(--accent-button-hover);
+}
+
+#otrosDatosModal #cancelEditNCGInput {
+  background-color: #6c757d;
+  color: white;
+}
+
+#otrosDatosModal #cancelEditNCGInput:hover {
+  background-color: #5a6268;
+}
+
+#otrosDatosModal .close-btn {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: 10px;
+  right: 10px;
   font-size: 1.5rem;
-  color: #888;
+  color: #555;
   cursor: pointer;
   transition: color 0.2s ease-in-out;
 }
 
-.close-btn:hover {
+#otrosDatosModal .close-btn:hover {
   color: #e74c3c;
-}
-
-#otrosDatosModal {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 80%;
-    max-width: 900px;
-    max-height: 90%;
-    overflow-y: auto;
-    background: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    z-index: 1000;
-    border: 1px solid #cbd5e1;
-}
-
-#otrosDatosModal h2, #otrosDatosModal h3 {
-    margin-bottom: 10px;
-    color: #1e3a8a; /* Azul más oscuro */
-}
-
-/* Botón de cierre del modal */
-#otrosDatosModal .close-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: #555;
 }

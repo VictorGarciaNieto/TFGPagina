@@ -277,9 +277,7 @@ function setupNetworkListeners() {
 
                             const parsedAltitudeVolume = {};
                             for (const [key, value] of Object.entries(newAltitudeVolume)) {
-                                const altitude = parseFloat(key); // Convertimos la altitud a double
-                                const volume = parseFloat(value); // Convertimos el volumen a double
-                                parsedAltitudeVolume[altitude] = volume;
+                                parsedAltitudeVolume[key] = parseFloat(value); // ← Conserva el key original
                             }
 
                             const existingNode = network.body.data.nodes.get(nodeId);
@@ -1228,9 +1226,9 @@ function openModalToAddNode(nodeType, x, y) {
 
     modalOpen = true;
 
-    const modal = document.createElement("div");
-    modal.classList.add("modal");
-    modal.innerHTML = `
+    const modalc = document.createElement("div");
+    modalc.classList.add("modal");
+    modalc.innerHTML = `
         <div class="modal-content">
             <span class="close-btn">&times;</span>
             <h2>Agregar ${nodeType}</h2>
@@ -1239,15 +1237,14 @@ function openModalToAddNode(nodeType, x, y) {
             <button id="addNodeBtn">Agregar</button>
         </div>
     `;
-    document.body.appendChild(modal);
-    centerModal(modal);
+    document.body.appendChild(modalc);
 
-    modal.querySelector(".close-btn").addEventListener("click", () => {
-        modal.remove();
+    modalc.querySelector(".close-btn").addEventListener("click", () => {
+        modalc.remove();
         modalOpen = false;
     });
 
-    modal.querySelector("#addNodeBtn").addEventListener("click", () => {
+    modalc.querySelector("#addNodeBtn").addEventListener("click", () => {
         const name = document.querySelector("#nodeName").value.trim();
         if (name) {
             if (nodeType === "Control Volume") {
@@ -1255,7 +1252,7 @@ function openModalToAddNode(nodeType, x, y) {
             } else if (nodeType === "Control Function") {
                 addControlFunction(name, x, y);
             }
-            modal.remove();
+            modalc.remove();
             modalOpen = false;
         } else {
             alert("Debe ingresar un nombre");
@@ -1267,9 +1264,9 @@ function openModalToAddEdge(fromNodeId, toNodeId) {
     if (modalOpen) return;
 
     modalOpen = true;
-    const modal = document.createElement("div");
-    modal.classList.add("modal");
-    modal.innerHTML = `
+    const modalf = document.createElement("div");
+    modalf.classList.add("modal");
+    modalf.innerHTML = `
         <div class="modal-content">
             <span class="close-btn">&times;</span>
             <h2>Agregar Flow Path</h2>
@@ -1278,19 +1275,19 @@ function openModalToAddEdge(fromNodeId, toNodeId) {
             <button id="addFlowPathBtn">Agregar</button>
         </div>
     `;
-    document.body.appendChild(modal);
-    centerModal(modal);
+    document.body.appendChild(modalf);
+    centerModal(modalf);
 
-    modal.querySelector(".close-btn").addEventListener("click", () => {
-        modal.remove();
+    modalf.querySelector(".close-btn").addEventListener("click", () => {
+        modalf.remove();
         modalOpen = false;
     });
 
-    modal.querySelector("#addFlowPathBtn").addEventListener("click", () => {
+    modalf.querySelector("#addFlowPathBtn").addEventListener("click", () => {
         const name = document.querySelector("#flowPathName").value.trim();
         if (name) {
             addFlowPath(name, fromNodeId, toNodeId);
-            modal.remove();
+            modalf.remove();
             modalOpen = false;
         } else {
             alert("Debe ingresar un nombre");
@@ -1495,7 +1492,7 @@ document.getElementById("flowPathBtn").addEventListener("click", () => {
 function syncMLFRProperties() {
     const currentNCGs = yamlData.melgen_input.ncg_input;
 
-    // Construye el nuevo set de MLFR keys con ID correcto
+    // Construye la lista actual de claves MLFR (ej: MLFR.4, MLFR.5, etc.)
     const newMLFRKeys = currentNCGs.map(gas => `MLFR.${gas.id}`);
 
     yamlData.melgen_input.control_volumes.forEach(cv => {
@@ -1503,21 +1500,25 @@ function syncMLFRProperties() {
             cv.properties = {};
         }
 
-        // Copia actual de propiedades para referencia
+        // Copia antigua de propiedades
         const oldProps = { ...cv.properties };
 
-        // Eliminar todas las claves MLFR antiguas
+        // Elimina todas las claves antiguas MLFR
         Object.keys(cv.properties).forEach(key => {
             if (key.startsWith("MLFR.")) {
                 delete cv.properties[key];
             }
         });
 
-        // Reasignar nuevas claves MLFR con valores antiguos si coinciden por nombre
-        currentNCGs.forEach((gas, index) => {
-            const oldEntry = Object.entries(oldProps).find(([k, _]) => k.startsWith("MLFR.") && oldProps[k] !== undefined);
+        // Añade las nuevas claves MLFR
+        currentNCGs.forEach(gas => {
             const newKey = `MLFR.${gas.id}`;
-            cv.properties[newKey] = oldEntry ? oldEntry[1] : 0.0;
+            // Si antes existía, conserva su valor; si no, inicia en 0.0
+            if (newKey in oldProps) {
+                cv.properties[newKey] = oldProps[newKey];
+            } else {
+                cv.properties[newKey] = 0.0;
+            }
         });
     });
 }
@@ -1583,17 +1584,3 @@ function removeConnectedFlowPaths(controlVolumeId) {
     );
 }
 
-// Función para centrar el elemento
-function centerModal(modal) {
-    modal.style.position = 'absolute';
-    modal.style.top = '50%'; // Posición vertical al 50% de la ventana
-    modal.style.left = '50%'; // Posición horizontal al 50% de la ventana
-    modal.style.transform = 'translate(-50%, -50%)'; // Mueve el elemento hacia el centro
-    modal.style.zIndex = 9999; // Asegurarse de que esté por encima de otros elementos
-    modal.style.width = '400px';  // Establece el tamaño del modal
-    modal.style.padding = '20px'; // Añade espacio alrededor del contenido
-    modal.style.backgroundColor = '#fff'; // Fondo blanco para el modal
-    modal.style.border = '1px solid #ccc'; // Borde gris
-    modal.style.borderRadius = '8px'; // Bordes redondeados
-    modal.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)'; // Sombra suave
-}
