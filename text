@@ -1,4 +1,0 @@
-git status           # Verifica los cambios
-git add .            # Añade los archivos
-git commit -m "Descripción de cambios"   # Crea un commit
-git push             # Sube los cambios a GitHub
