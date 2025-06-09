@@ -274,16 +274,13 @@ def convert_to_yaml(filename):
     return yaml_filename
 
 def convert_to_melcor(yaml_filename, output_filename):
-    # Leer YAML
     with open(yaml_filename, 'r') as file:
         data = yaml.safe_load(file)
 
     lines = []
 
-    # Agregar encabezado MELGEN
     lines.append("*EOR* MELGEN")
 
-    # Obtener nombre del archivo sin extensión para el TITLE
     base_filename = os.path.splitext(os.path.basename(yaml_filename))[0]
     lines.append(f"TITLE     {base_filename}")
 
@@ -332,7 +329,6 @@ def convert_to_melcor(yaml_filename, output_filename):
     for fp in melgen.get("flow_paths", []):
         lines.append("**********")
 
-        # Formateo de alturas con punto decimal
         from_h = f"{float(fp['from_control_volume']['height']):.1f}"
         to_h = f"{float(fp['to_control_volume']['height']):.1f}"
 
@@ -371,7 +367,7 @@ def convert_to_melcor(yaml_filename, output_filename):
 
         if fp.get("time_dependent_flow_path"):
             t = fp["time_dependent_flow_path"]
-            function_number = str(t["function_number"]).zfill(3)  # Asegura formato 3 dígitos
+            function_number = str(t["function_number"]).zfill(3) 
             lines.append(f"FL{fp['id']}T0 {t['type_flag']} {function_number}")
 
     lines.append("************************")
@@ -382,15 +378,12 @@ def convert_to_melcor(yaml_filename, output_filename):
     for cf in melgen.get("control_functions", []):
         lines.append("**********")
 
-        # Conversión de valores numéricos con formato decimal uniforme
         scale = f"{float(cf['scale_factor']):.1f}"
         additive = f"{float(cf.get('additive_constant', 0.0)):.1f}"
-        # Línea principal con todos los campos
         lines.append(
             f"CF{cf['id']}00 {cf['name']} {cf['type']} {cf['num_arguments']} {scale} {additive}"
         )
 
-        # Argumentos con formato correcto
         for i, arg in enumerate(cf.get("arguments", [])):
             sf = f"{float(arg['scale_factor']):.1f}"
             ac = f"{float(arg['additive_constant']):.1f}"
@@ -405,43 +398,36 @@ def convert_to_melcor(yaml_filename, output_filename):
     for idx, edf in enumerate(melgen.get("external_data_files", [])):
         lines.append("**********")
         
-        # EDF00100 - name, channels, mode
         name = edf.get("name", "")
         channels = edf.get("channels", "")
         mode = edf.get("mode", "")
         lines.append(f"{'EDF00100':<10}{name:<12}{channels:<6}{mode:<10}")
         
-        # EDF00101 - file name
         if "file_specification" in edf:
             file_name = edf["file_specification"].get("file_name", "")
             lines.append(f"{'EDF00101':<10}{file_name}")
         
-        # EDF00102 - file format
         if "file_format" in edf:
             file_format = edf["file_format"]
             lines.append(f"{'EDF00102':<10}{file_format}")
         
-        # EDF00110 - write increment control (conversión numérica)
         if "write_increment_control" in edf:
             w = edf["write_increment_control"]
             time_effective = f"{float(w.get('time_effective', 0.0)):.1f}"
             time_increment = f"{float(w.get('time_increment', 0.0)):.1f}"
             lines.append(f"{'EDF00110':<10}{time_effective:<12}{time_increment}")
         
-        # EDF001Ax - channel variables
         channel_vars = edf.get("channel_variables", {})
         for i, (k, v) in enumerate(channel_vars.items(), start=1):
             lines.append(f"{'EDF001A'+str(i):<10}{v}")
 
 
-    # Agregar final MELGEN
     lines.append(". * END MELGEN")
 
     lines.append("************************")
     lines.append("*      MELCOR INPUT    *")
     lines.append("************************")
 
-    # Agregar inicio MELCOR
     lines.append("*EOR* MELCOR")
     
     # WARNINGLEVEL
@@ -463,7 +449,7 @@ def convert_to_melcor(yaml_filename, output_filename):
         cpu_lim = float(cpu_settings["cpu_lim"])
         lines.append(f"{'CPULIM':<10}{cpu_lim:.1f}")
 
-    # CYMESF (estos son enteros)
+    # CYMESF
     cymesf = cpu_settings.get("cymesf", [])
     if cymesf:
         cymesf_values = " ".join(str(int(float(v))) for v in cymesf)
@@ -492,7 +478,6 @@ def convert_to_melcor(yaml_filename, output_filename):
     # Agregar final MELCOR
     lines.append(". * END MELCOR")
     
-    # Guardar el archivo resultante
     os.makedirs(os.path.dirname(output_filename), exist_ok=True)
     with open(output_filename, 'w') as out:
         out.write('\n'.join(lines) + '\n')
@@ -535,18 +520,15 @@ def convert_to_melcor_route():
     if not yaml_content or not file_name:
         return "Missing data", 400
 
-    # Crear archivos temporales
     temp_dir = tempfile.mkdtemp()
     yaml_path = os.path.join(temp_dir, file_name + '.yaml')
     melcor_path = os.path.join(temp_dir, file_name + '.melcor')
 
-    # Guardar el YAML recibido
     with open(yaml_path, 'w') as yaml_file:
         yaml_file.write(yaml_content)
 
     convert_to_melcor(yaml_path, melcor_path)
 
-    # Enviar el archivo MELCOR de vuelta
     return send_file(melcor_path, as_attachment=True, download_name=file_name + '.inp')
 
 if __name__ == "__main__":

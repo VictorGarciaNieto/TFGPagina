@@ -82,11 +82,11 @@ function clearGraph() {
     nodes.clear();
     edges.clear();
     if (network) {
-        network.destroy(); // Destruir instancia de Vis.js para evitar residuos
+        network.destroy();
     }
 }
 
-// Nueva función que procesa directamente el string YAML
+//Función que procesa el ficheor YAML para visualizarlo
 function handleFileUpload(yamlString) {
     try {
         console.log("Contenido del YAML leído:", yamlString);
@@ -94,7 +94,7 @@ function handleFileUpload(yamlString) {
         console.log("YAML parseado:", yamlData);
         clearGraph();
 
-        // Añadimos nodos de Control Volumes (CV)
+        // Añadimos nodos de CV
         yamlData.melgen_input.control_volumes.forEach(cv => {
             const prefixedId = generatePrefixedId("cv", cv.id);
             nodes.add({
@@ -108,7 +108,7 @@ function handleFileUpload(yamlString) {
             });
         });
 
-        // Añadimos nodos de Control Functions (CF)
+        // Añadimos nodos de CF
         yamlData.melgen_input.control_functions.forEach(cf => {
             const prefixedId = generatePrefixedId("cf", cf.id);
             nodes.add({
@@ -128,7 +128,7 @@ function handleFileUpload(yamlString) {
             });
         });
 
-        // Añadimos aristas de Flow Paths (FP)
+        // Añadimos aristas de FP
         yamlData.melgen_input.flow_paths.forEach(fp => {
             const fromControlVolumeId = generatePrefixedId("cv", fp.from_control_volume.id);
             const toControlVolumeId = generatePrefixedId("cv", fp.to_control_volume.id);
@@ -168,7 +168,6 @@ function setupNetworkListeners() {
                 const nodeId = clickedNodes[0];
                 const node = network.body.data.nodes.get(nodeId);
         
-                // Distinción entre nodos de Control Volumes y Control Functions
                 if (nodeId.startsWith("cv")) {
 
                     const controlVolumeId = nodeId.replace("cv_", "");
@@ -180,7 +179,6 @@ function setupNetworkListeners() {
                         controlVolume.properties,
                         controlVolume.altitude_volume,
                         (newProps, newAltitudeVolume) => {
-                            // Actualizar el nodo con los nuevos valores
                             network.body.data.nodes.update({ 
                                 id: nodeId, 
                                 properties: newProps, 
@@ -207,19 +205,18 @@ function setupNetworkListeners() {
                                 if (isNaN(value) || value === '') {
                                     alert('El valor debe ser un número válido.');
                                     invalidFields = true;
-                                    return; // Cancelar el cambio si no es un número
+                                    return; 
                                 }
         
-                                // Comprobamos si el valor es negativo
+                                // Comprobar si el valor es negativo
                                 const numericValue = parseFloat(value);
                                 if (numericValue < 0) {
                                     alert('El valor no puede ser negativo.');
                                     invalidFields = true;
-                                    return; // Cancelar el cambio si el valor es negativo
+                                    return; 
                                 }
         
                                 if (key.startsWith("MLFR")) {
-                                    // Comprobamos si el valor es numérico y está dentro del rango adecuado
                                     if (isNaN(numericValue) || numericValue < 0.0 || numericValue > 1.0) {
                                         mlfrValid = false;
                                         alert('Los valores de MLFR deben ser numéricos y estar entre 0.0 y 1.0.');
@@ -236,7 +233,7 @@ function setupNetworkListeners() {
                                     return;
                                 }
         
-                                newProps[key] = value; // Actualizar el valor de la propiedad
+                                newProps[key] = value; 
                             }
                         });
         
@@ -266,18 +263,18 @@ function setupNetworkListeners() {
                         // Verificación de que la suma de los valores MLFR es exactamente 1.0
                         if (mlfrValid && mlfrTotal !== 1.0) {
                             alert('La suma de todos los valores de MLFR debe ser exactamente 1.0.');
-                            return; // Detener la ejecución si la condición no se cumple
+                            return; 
                         }
                         
                         if (mlfrValid && mlfrTotal === 1.0 && !invalidFields) {
                             const parsedProps = {};
                             for (const [key, value] of Object.entries(newProps)) {
-                                parsedProps[key] = parseFloat(value); // Convertimos cada propiedad a double
+                                parsedProps[key] = parseFloat(value); 
                             }
 
                             const parsedAltitudeVolume = {};
                             for (const [key, value] of Object.entries(newAltitudeVolume)) {
-                                parsedAltitudeVolume[key] = parseFloat(value); // ← Conserva el key original
+                                parsedAltitudeVolume[key] = parseFloat(value); 
                             }
 
                             const existingNode = network.body.data.nodes.get(nodeId);
@@ -293,11 +290,9 @@ function setupNetworkListeners() {
                             const controlVolume = yamlData.melgen_input.control_volumes.find(cv => cv.id === controlVolumeId);
         
                             if (controlVolume) {
-                                // Actualizar únicamente properties y altitude_volume
                                 controlVolume.properties = { ...controlVolume.properties, ...parsedProps };
                                 controlVolume.altitude_volume = { ...parsedAltitudeVolume };
                             
-
                                 console.log("Control Volume actualizado:", controlVolume);
                                 console.log("yamlData actualizado:", JSON.stringify(yamlData, null, 2));
                             }
@@ -363,16 +358,13 @@ function setupNetworkListeners() {
                         generateArgumentsForm(newNumArguments, node.properties.arguments);
                     });
 
-                    // Cambiar tipo de función → actualizar número de argumentos automáticamente
                     document.getElementById('edit-type').addEventListener('change', (event) => {
                         const selectedType = event.target.value;
                         const requiredArgs = argumentCountByType[selectedType] || 0;
 
-                        // Actualizar input de número de argumentos
                         const numArgInput = document.getElementById('edit-num-arguments');
                         numArgInput.value = requiredArgs;
 
-                        // Regenerar formulario de argumentos, manteniendo los existentes
                         generateArgumentsForm(requiredArgs, node.properties.arguments);
                     });
         
@@ -387,13 +379,11 @@ function setupNetworkListeners() {
                             arguments: []
                         };
                     
-                        // Validar el número de argumentos: debe ser un entero positivo
                         if (isNaN(newProps.num_arguments) || newProps.num_arguments < 0 || !Number.isInteger(newProps.num_arguments)) {
                             alert("El número de argumentos debe ser un número entero positivo.");
                             invalidFields = true;
                         }
                     
-                        // Validar el factor de escala: debe ser un número y no contener letras
                         if (!/^-?\d+(\.\d+)?$/.test(newProps.scale_factor)) {
                             alert("El Factor de Escala debe ser un número válido (sin letras ni caracteres especiales).");
                             invalidFields = true;
@@ -401,7 +391,6 @@ function setupNetworkListeners() {
                             newProps.scale_factor = parseFloat(newProps.scale_factor);
                         }
                     
-                        // Validar la constante aditiva: debe ser un número y no contener letras
                         if (!/^-?\d+(\.\d+)?$/.test(newProps.additive_constant)) {
                             alert("La Constante Aditiva debe ser un número válido (sin letras ni caracteres especiales).");
                             invalidFields = true;
@@ -415,21 +404,21 @@ function setupNetworkListeners() {
                             const additiveConstant = document.getElementById(`edit-arg-${i}-additive-constant`).value.trim();
                             const databaseElement = document.getElementById(`edit-arg-${i}-database-element`).value.trim();
                     
-                            // Validar Factor de Escala: debe ser un número
+                            // Validar Factor de Escala
                             if (!/^-?\d+(\.\d+)?$/.test(scaleFactor)) {
                                 alert(`El campo "Factor de Escala" del argumento ${i + 1} contiene valores inválidos. Solo se permiten números.`);
                                 invalidFields = true;
                                 break;
                             }
                     
-                            // Validar Constante Aditiva: debe ser un número
+                            // Validar Constante Aditiva
                             if (!/^-?\d+(\.\d+)?$/.test(additiveConstant)) {
                                 alert(`El campo "Constante Aditiva" del argumento ${i + 1} contiene valores inválidos. Solo se permiten números.`);
                                 invalidFields = true;
                                 break;
                             }
                     
-                            // Validar Elemento de Base de Datos: debe comenzar por una letra y solo puede contener letras, números, guiones y puntos
+                            // Validar Elemento de Base de Datos
                             if (!/^[a-zA-Z][a-zA-Z0-9\-.]*$/.test(databaseElement)) {
                                 alert(`El campo "Elemento de Base de Datos" del argumento ${i + 1} debe comenzar por una letra y solo puede contener letras, números, guiones y puntos.`);
                                 invalidFields = true;
@@ -447,7 +436,7 @@ function setupNetworkListeners() {
                             network.body.data.nodes.update({ id: nodeId, properties: newProps });
         
                             // Actualizar la variable yamlData
-                            const controlFunctionId = nodeId.replace(/^\D+/g, ""); // Extraer ID sin prefijo
+                            const controlFunctionId = nodeId.replace(/^\D+/g, ""); 
                             const controlFunction = yamlData.melgen_input.control_functions.find(cf => cf.id === controlFunctionId);
         
                             if (controlFunction) {
@@ -465,7 +454,6 @@ function setupNetworkListeners() {
                         }
                     });                        
         
-                    // Manejo del evento de cancelar
                     document.getElementById("cancelEdit").addEventListener("click", () => {
                         propertiesContent.innerHTML = '';
                     });
@@ -475,7 +463,6 @@ function setupNetworkListeners() {
                 const edgeId = clickedEdges[0];
                 const edge = network.body.data.edges.get(edgeId);
         
-                // Generar el formulario de edición
                 const editForm = createEditFormFlowPath(
                     edgeId,
                     edge.label || "",
@@ -512,7 +499,6 @@ function setupNetworkListeners() {
                                         newProps[key] = numericValue;
                                     }
                                 } else {
-                                    // Validación estándar para otros campos: deben ser > 0
                                     if (numericValue <= 0 || value !== String(numericValue)) {
                                         alert(`El valor de ${key} debe ser un número positivo válido.`);
                                         invalidFields = true;
@@ -532,7 +518,6 @@ function setupNetworkListeners() {
                             const value = input.value.trim();
                             const numericValue = parseFloat(value);
         
-                            // Verificación: Comprobar que el valor completo sea numérico y mayor que 0
                             if (isNaN(numericValue) || value === '' || numericValue <= 0 || value !== String(numericValue)) {
                                 alert(`El valor de ${key} debe ser un número positivo válido.`);
                                 invalidFields = true;
@@ -552,7 +537,6 @@ function setupNetworkListeners() {
                                 const value = input.value.trim();
                                 const numericValue = parseFloat(value);
         
-                                // Verificación: Comprobar que el valor completo sea numérico y mayor que 0
                                 if (isNaN(numericValue) || value === '' || numericValue <= 0 || value !== String(numericValue)) {
                                     alert(`El valor de ${key} - ${subKey} debe ser un número positivo válido.`);
                                     invalidFields = true;
@@ -571,7 +555,6 @@ function setupNetworkListeners() {
                             const value = input.value.trim();
                             const numericValue = parseFloat(value);
         
-                            // Verificación: Comprobar que el valor completo sea numérico y mayor que 0
                             if (isNaN(numericValue) || value === '' || numericValue <= 0 || value !== String(numericValue)) {
                                 alert(`El valor de ${key} debe ser un número positivo válido.`);
                                 invalidFields = true;
@@ -666,7 +649,7 @@ downloadButton.addEventListener('click', async () => {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                fileName: fileName, // sin extensión
+                fileName: fileName,
                 yamlContent: yamlContent
             })
         });
@@ -857,7 +840,7 @@ const openModal = () => {
 // Función para cerrar el modal
 const closeModal = () => {
     modal.classList.add("hidden");
-    modal.style.display = "none"; // Asegurar que se oculte
+    modal.style.display = "none"; 
 };
 
 // Función para agregar listener al botón cerrar dentro del modal
@@ -874,7 +857,7 @@ modal.addEventListener("click", (e) => {
 
 const updateChannelVariables = (index, channels) => {
     const container = document.getElementById(`channel-variables-section-${index}`);
-    container.innerHTML = ""; // Limpiar contenido existente
+    container.innerHTML = ""; 
 
     for (let i = 1; i <= channels; i++) {
         const key = `A${i}`;
@@ -988,7 +971,7 @@ const createEditFormExternalDataFiles = (externalDataFiles) => {
 };
 
 const createEditFormControlFunction = (id, name, properties, updateCallback) => {
-    // Lista de opciones disponibles para el campo "Tipo"
+    // Lista de opciones disponibles
     const typeOptions = [
         "L-EQUALS", "L-NOT", "L-EQV", "L-EQ", "L-GT", "L-GE", "L-NE", "L-AND", "L-OR", 
         "L-L-IFTE", "EQUALS", "ABS", "ADD", "DIM", "MULTIPLY", "DIVIDE", "POWER-I", 
@@ -999,7 +982,7 @@ const createEditFormControlFunction = (id, name, properties, updateCallback) => 
 
     let formContent = `<h4>Editar propiedades de la función de control: ${id} - ${name}</h4>`;
     
-    // Campo "Tipo" con una lista desplegable
+    // Lista desplegable
     formContent += `
         <div class="property-section">
             <label>Tipo: </label>
@@ -1029,7 +1012,7 @@ const createEditFormControlFunction = (id, name, properties, updateCallback) => 
         </div>
     `;
 
-    // Contenedor para los argumentos (se generará dinámicamente)
+    // Contenedor para los argumentos 
     formContent += `<div id="arguments-container"></div>`;
 
     // Botones para guardar y cancelar
@@ -1166,10 +1149,10 @@ newDiagramBtn.addEventListener('click', createNewDiagram);
 
 // Función para crear un nuevo diagrama desde cero
 function createNewDiagram() {
-    yamlData = JSON.parse(JSON.stringify(initialYaml)); // Clonar estructura base
+    yamlData = JSON.parse(JSON.stringify(initialYaml)); 
     clearGraph(); 
 
-    document.getElementById('propertiesContent').innerHTML = ""; // Limpiar panel de propiedades
+    document.getElementById('propertiesContent').innerHTML = ""; 
 
     console.log("Nuevo diagrama creado:", yamlData);
     console.log("Estructura YAML inicial:", jsyaml.dump(yamlData));
@@ -1191,11 +1174,12 @@ function setupDragAndDrop() {
     const controlVolumeElement = document.getElementById("controlVolume");
     const controlFunctionElement = document.getElementById("controlFunction");
 
+    // Habilitar arrastre para CV
     controlVolumeElement.addEventListener("dragstart", (event) => {
         event.dataTransfer.setData("text/plain", "control_volume");
     });
 
-    // Habilitar arrastre para Control Function (CF)
+    // Habilitar arrastre para CF
     controlFunctionElement.addEventListener("dragstart", (event) => {
         event.dataTransfer.setData("text/plain", "control_function");
     });
@@ -1342,7 +1326,6 @@ function addControlVolume(name, x, y) {
         controlVolume.properties[`MLFR.${gas.id}`] = 0.0;
     });
 
-    // Aquí asumimos que ya tienes el objeto `data` donde se guardan los Control Volumes
     yamlData.melgen_input.control_volumes.push(controlVolume);
 
     console.log("yamlData actualizado:", JSON.stringify(yamlData, null, 2));
@@ -1363,7 +1346,7 @@ function addControlFunction(name, x, y) {
         label: name,
         shape: "circle",
         color: "#F5A5D5",
-        type: 'control_function', // Asegurar compatibilidad
+        type: 'control_function', 
         properties: {
             type: "EQUALS",
             sinks: [],
@@ -1490,7 +1473,6 @@ document.getElementById("flowPathBtn").addEventListener("click", () => {
 function syncMLFRProperties() {
     const currentNCGs = yamlData.melgen_input.ncg_input;
 
-    // Construye la lista actual de claves MLFR (ej: MLFR.4, MLFR.5, etc.)
     const newMLFRKeys = currentNCGs.map(gas => `MLFR.${gas.id}`);
 
     yamlData.melgen_input.control_volumes.forEach(cv => {
@@ -1498,10 +1480,8 @@ function syncMLFRProperties() {
             cv.properties = {};
         }
 
-        // Copia antigua de propiedades
         const oldProps = { ...cv.properties };
 
-        // Elimina todas las claves antiguas MLFR
         Object.keys(cv.properties).forEach(key => {
             if (key.startsWith("MLFR.")) {
                 delete cv.properties[key];
@@ -1511,7 +1491,6 @@ function syncMLFRProperties() {
         // Añade las nuevas claves MLFR
         currentNCGs.forEach(gas => {
             const newKey = `MLFR.${gas.id}`;
-            // Si antes existía, conserva su valor; si no, inicia en 0.0
             if (newKey in oldProps) {
                 cv.properties[newKey] = oldProps[newKey];
             } else {
@@ -1540,7 +1519,6 @@ function removeElementFromGraph(elementId, type) {
         // Eliminar nodo del dataset
         nodes.remove({ id: elementId });
 
-        // Extraer el prefijo e ID real
         const [prefix, id] = elementId.split("_");
         
         // Eliminar del YAML
@@ -1554,7 +1532,6 @@ function removeElementFromGraph(elementId, type) {
         // Eliminar arista del dataset
         edges.remove({ id: elementId });
 
-        // Extraer el prefijo e ID real
         const [prefix, id] = elementId.split("_");
         
         // Eliminar del YAML
@@ -1570,7 +1547,7 @@ function removeConnectedFlowPaths(controlVolumeId) {
         fp.from_control_volume.id === controlVolumeId || fp.to_control_volume.id === controlVolumeId
     );
     
-    // Eliminar Flow Paths del dataset gráfico
+    // Eliminar Flow Paths
     flowPathsToRemove.forEach(fp => {
         const prefixedId = generatePrefixedId("fp", fp.id);
         edges.remove({ id: prefixedId });
